@@ -29,21 +29,16 @@ block_0=[["*","*"],
          ["*","*"]]
           
 block_1=[["*","*","*"],
-         [" ","*"," "],
-         [" "," "," "]]
+         [" ","*"," "],]
         
 block_2=[[" ","*","*"],
-         ["*","*"," "],
-         [" "," "," "]]
+         ["*","*"," "],]
 
 block_3=[["*"," "," "],
-         ["*","*","*"],
-         [" "," "," "]]
+         ["*","*","*"],]
 
 block_4=[[" "," "," "," "],
-         ["*","*","*","*"],
-         [" "," "," "," "],
-         [" "," "," "," "]]
+         ["*","*","*","*"],]
 
 
 blocks=[block_0,block_1,block_2,block_3,block_4]
@@ -55,6 +50,7 @@ score=[0]
 #output: new_block[][]
 #kiểm tra rồi
 def get_new_block(blocks,range_of_block):
+    range_of_block[0]=0
     range_of_block[1]=3                        #khởi tạo lại giá trị ban đầu cho range của new block
     return blocks[randrange(0,len(blocks))]
 
@@ -67,27 +63,24 @@ def merge_block_with_screen(screen_phu,block_x,range_of_block):
     for row in range(len(block_x)):
         block_row=block_x[row]
         for colum in range(len(block_row)):
-            block_in_screen[row+range_of_block[0]][colum+range_of_block[1]]=block_row[colum]
+            if block_row[colum]=="*":
+                block_in_screen[row+range_of_block[0]][colum+range_of_block[1]]="*"
     return block_in_screen
 
-#merge screen để chuẩn bị display
+#merge screen and display
 #input: screen [][]
-#output: merge_scr []
 #kiểm tra rồi
-def merge_screen(screen_):
+def display_screen(screen_):
     merge_scr=[]
     for row in range(len(screen_)):
         string_row =""
         for colum in range(len(screen_[row])):
             string_row+=screen_[row][colum]
         merge_scr.append(string_row) 
-    return merge_scr
-
-# hiển thị screen
-#kiểm tra rồi
-def display_screen(merge_scr):
     for row in range(len(merge_scr)):
         print(merge_scr[row])
+
+
 
 #dich trai:
 #input: screen and block, range of block
@@ -122,18 +115,27 @@ def move_right(screen_phu,block_x,range_of_block):
 # xuống hàng:
 #input: screen and block, range of block
 #output: new_screen
-#kiểm tra rồi
+#kiểm tra rồi,chưa khắc phục được vài lỗi
 def down_1_line(screen_phu,block_x,range_of_block):
     new_screen=copy.deepcopy(screen_phu)
-    for row in range(len(block_x)):
-        block_row=block_x[row]
-        for colum in range(len(block_row)):
-            if range_of_block[0]<len(new_screen)-1:
+    if range_of_block[0]<len(new_screen)-len(block):
+        for row in range(len(block_x)):
+            block_row=block_x[row]
+            for colum in range(len(block_row)):
                 new_screen[row+range_of_block[0]+1][colum+range_of_block[1]]=block_row[colum]
-            else:
+        return new_screen
+    else:
+        for row in range(len(block_x)):
+            block_row=block_x[row]
+            for colum in range(len(block_row)):
                 new_screen[row+range_of_block[0]][colum+range_of_block[1]]=block_row[colum]
-    return new_screen
+        return new_screen
 
+    
+    
+    
+    
+  
 #xoay 90 độ
 ######################################
 #input: block
@@ -156,6 +158,9 @@ def xoay_block_90(block):
 #output: True or False
 #kiểm tra rồi
 def kiem_tra_trung_screen(main_screen,next_screen):
+    for colum in range(len(next_screen[0])):
+        if next_screen[len(next_screen)-1][colum]=="*":
+            return True
     linh_canh=0
     for row in range(len(main_screen)):
         for colum in range(len(main_screen[row])):
@@ -215,12 +220,28 @@ def check_gameover(main_screen,block):
         if main_screen[0][colum]=="*":
             return True
     return False
-
-
-
-######test#####
-block=get_new_block(blocks,range_of_block)
-print(check_gameover(screen,block))
-
-
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 
+######test_không có tác động từ bàn phím#####
+pre_sec=0
+main_screen=copy.deepcopy(screen)
+screen_phu=copy.deepcopy(screen)
+while True:
+    block=get_new_block(blocks,range_of_block)
+    new_scr=merge_block_with_screen(screen_phu,block,range_of_block)
+    dis_screen=merge_block_with_screen(main_screen,block,range_of_block)
+    display_screen(dis_screen)
+    time_now=datetime.datetime.now()
+    while True:
+        if new_scr == down_1_line(screen_phu,block,range_of_block) or kiem_tra_trung_screen(main_screen,down_1_line(screen_phu,block,range_of_block)) :
+            break      
+        new_scr= down_1_line(screen_phu,block,range_of_block)
+        range_of_block[0]+=1
+        dis_screen=merge_block_with_screen(main_screen,block,range_of_block)
+        os.system("clear")
+        display_screen(dis_screen)
+        time.sleep(0.2)
+    main_screen=merge_block_with_screen(main_screen,block,range_of_block)
+    if check_gameover(main_screen,block):
+        break
+os.system("figlet gameover")
 
