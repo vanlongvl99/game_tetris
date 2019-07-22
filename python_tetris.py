@@ -1,3 +1,4 @@
+
 from random import randrange
 import os 
 import time
@@ -229,6 +230,7 @@ while True:
     block=get_new_block(blocks,range_of_block)
     new_scr=merge_block_with_screen(screen_phu,block,range_of_block)
     dis_screen=merge_block_with_screen(main_screen,block,range_of_block)
+    os.system("clear")
     display_screen(dis_screen)
     time_now=datetime.datetime.now()
     while True:
@@ -244,4 +246,3 @@ while True:
     if check_gameover(main_screen,block):
         break
 os.system("figlet gameover")
-
