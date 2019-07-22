@@ -41,10 +41,15 @@ block_3=[["*"," "," "],
          [" "," "," "]]
 
 block_4=[[" "," "," "," "],
-         ["*","*","*","*"],]
+         ["*","*","*","*"],
+         [" "," "," "," "],
+         [" "," "," "," "],]
+
+
 block_5=[[" "," ","*"],
          ["*","*","*"],
          [" "," "," "]]
+
 block_6=[["*","*"," "],
          [" ","*","*"],
          [" "," "," "]]
@@ -79,8 +84,13 @@ def merge_block_with_screen(screen_phu,block_x,range_of_block):
 #merge screen and display
 #input: screen [][]
 #kiểm tra rồi
-def display_screen(screen_):
+def display_screen(screen_,score):
+    os.system("clear")
     merge_scr=[]
+    print("######")
+    print("#",score[0],"#")
+    print("######")
+    print("======================\n")
     for row in range(len(screen_)):
         string_row =""
         for colum in range(len(screen_[row])):
@@ -88,8 +98,6 @@ def display_screen(screen_):
         merge_scr.append(string_row) 
     for row in range(len(merge_scr)):
         print(merge_scr[row])
-
-
 
 #dich trai:
 #input: screen and block, range of block
@@ -121,8 +129,6 @@ def move_right(screen_phu,block_x,range_of_block):
     range_new[1]+=1
     return range_new
 
-    
-
 # xuống hàng:
 #input: screen and block, range of block
 #output: new_screen
@@ -134,12 +140,7 @@ def down_1_line(screen_phu,block,range_of_block):
         return range_new
     else:
         return range_new
-
-    
-    
-    
-    
-  
+ 
 #xoay 90 độ
 ######################################
 #input: block
@@ -154,8 +155,6 @@ def xoay_block_90(block):
         for colum in range(len(block[row])):
             block2[row][colum]=block1[row][len(block[row])-1-colum]
     return block2
-
-
 
 #kiểm tra new-screen với screen chính có bị trùng nhau không
 #input: screen chính và new-screen
@@ -201,7 +200,7 @@ def kiem_tra_hang_day(main_screen,score):
             if main_screen[row][colum]==" ":
                 linh_canh=0
         if linh_canh==1:
-            score[0]+=1
+            score[0]+=1[" "," "," "," "],
             main_screen=xoa_dich_dong_i(main_screen,row)
     return main_screen
 
@@ -229,57 +228,61 @@ def check_gameover(main_screen,block):
 pre_sec=0
 main_screen=copy.deepcopy(screen)
 screen_phu=copy.deepcopy(screen)
-left="a"
-right="d"
-xoay="w"
-down_all=" "
+left="a" #block dịch qua trái
+right="d" #block dịch qua phải
+xoay="w"   #block xoay 90 độ cùng chiều kim đồng hồ
+down_all=" " # dấu cách -> block rơi xuống cùng
 while True:
     block=get_new_block(blocks,range_of_block)
     new_scr=merge_block_with_screen(screen_phu,block,range_of_block)
     dis_screen=merge_block_with_screen(main_screen,block,range_of_block)
-    os.system("clear")
-    display_screen(dis_screen)
+    
+    display_screen(dis_screen,score)
     time_now=datetime.datetime.now()
     while True:
-        player_move=input()
+        player_move=input() #phải có tác động từ bàn phím thì chương trình mới tiếp tục
         if player_move==left:
             if range_of_block != move_left(screen_phu,block,range_of_block) or kiem_tra_khong_trung_screen(main_screen,merge_block_with_screen(screen_phu,block,move_left(screen_phu,block,range_of_block))) :
                 range_of_block=move_left(screen_phu,block,range_of_block)
                 dis_screen=merge_block_with_screen(main_screen,block,range_of_block)
+                
                 time.sleep(0.1)
-                os.system("clear")
-                display_screen(dis_screen)
+                
+                display_screen(dis_screen,score)
         if player_move==right:
             if range_of_block != move_right(screen_phu,block,range_of_block) or kiem_tra_khong_trung_screen(main_screen,merge_block_with_screen(screen_phu,block,move_right(screen_phu,block,range_of_block))) :
                 range_of_block=move_right(screen_phu,block,range_of_block)
                 dis_screen=merge_block_with_screen(main_screen,block,range_of_block)
+                
                 time.sleep(0.1)
-                os.system("clear")
-                display_screen(dis_screen)
+                display_screen(dis_screen,score)
         if player_move==xoay:
             if  kiem_tra_khong_trung_screen(main_screen,merge_block_with_screen(screen_phu,xoay_block_90(block),range_of_block)) :
                 block=xoay_block_90(block)
                 dis_screen=merge_block_with_screen(main_screen,block,range_of_block)
                 time.sleep(0.1)
-                os.system("clear")
-                display_screen(dis_screen)
+                
+                display_screen(dis_screen,score)
         if player_move==" ":
             while True:
                 if range_of_block == down_1_line(screen_phu,block,range_of_block) or not kiem_tra_khong_trung_screen(main_screen,merge_block_with_screen(screen_phu,block,down_1_line(screen_phu,block,range_of_block))) :
                     break      
                 range_of_block=down_1_line(screen_phu,block,range_of_block)
             dis_screen=merge_block_with_screen(main_screen,block,range_of_block)
-            os.system("clear")
-            display_screen(dis_screen)
+            
+            display_screen(dis_screen,score)
             break
-        if range_of_block == down_1_line(screen_phu,block,range_of_block) or not kiem_tra_khong_trung_screen(main_screen,merge_block_with_screen(screen_phu,block,move_left(screen_phu,block,range_of_block))) :
+        if range_of_block == down_1_line(screen_phu,block,range_of_block) or not kiem_tra_khong_trung_screen(main_screen,merge_block_with_screen(screen_phu,block,down_1_line(screen_phu,block,range_of_block))) :
             break      
         range_of_block=down_1_line(screen_phu,block,range_of_block)
         dis_screen=merge_block_with_screen(main_screen,block,range_of_block)
         time.sleep(0.1)
-        os.system("clear")
-        display_screen(dis_screen)
+        
+        display_screen(dis_screen,score)
     main_screen=merge_block_with_screen(main_screen,block,range_of_block)
+    kiem_tra_hang_day(main_screen,score)
+    os.system("clear")
+    display_screen(main_screen,score)
     if check_gameover(main_screen,block):
         break
 os.system("figlet gameover")
