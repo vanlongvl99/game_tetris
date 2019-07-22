@@ -60,7 +60,7 @@ score=[0]
 #kiểm tra rồi
 def get_new_block(blocks,range_of_block):
     range_of_block[0]=0
-    range_of_block[1]=6                        #khởi tạo lại giá trị ban đầu cho range của new block
+    range_of_block[1]=3                        #khởi tạo lại giá trị ban đầu cho range của new block
     return blocks[randrange(0,len(blocks))]
 
 #nhập block vào screen
@@ -161,10 +161,10 @@ def xoay_block_90(block):
 #input: screen chính và new-screen
 #output: True or False
 #kiểm tra rồi
-def kiem_tra_trung_screen(main_screen,next_screen):
+def kiem_tra_khong_trung_screen(main_screen,next_screen):
     for colum in range(len(next_screen[0])):
         if next_screen[len(next_screen)-1][colum]=="*":
-            return True
+            return False
     linh_canh=0
     for row in range(len(main_screen)):
         for colum in range(len(main_screen[row])):
@@ -172,9 +172,9 @@ def kiem_tra_trung_screen(main_screen,next_screen):
                 if main_screen[row][colum]=="*":
                     linh_canh=1
     if linh_canh==1:
-        return True
-    else:
         return False
+    else:
+        return True
 
 #xóa dòng i và dịch các dòng ở trên dòng i xuống
 #input: main_screen và i
@@ -229,6 +229,10 @@ def check_gameover(main_screen,block):
 pre_sec=0
 main_screen=copy.deepcopy(screen)
 screen_phu=copy.deepcopy(screen)
+left="a"
+right="d"
+xoay="w"
+down_all=" "
 while True:
     block=get_new_block(blocks,range_of_block)
     new_scr=merge_block_with_screen(screen_phu,block,range_of_block)
@@ -237,11 +241,42 @@ while True:
     display_screen(dis_screen)
     time_now=datetime.datetime.now()
     while True:
-        if range_of_block == move_left(screen_phu,block,range_of_block) or kiem_tra_trung_screen(main_screen,merge_block_with_screen(screen_phu,block,move_left(screen_phu,block,range_of_block))) :
+        player_move=input()
+        if player_move==left:
+            if range_of_block != move_left(screen_phu,block,range_of_block) or kiem_tra_khong_trung_screen(main_screen,merge_block_with_screen(screen_phu,block,move_left(screen_phu,block,range_of_block))) :
+                range_of_block=move_left(screen_phu,block,range_of_block)
+                dis_screen=merge_block_with_screen(main_screen,block,range_of_block)
+                time.sleep(0.1)
+                os.system("clear")
+                display_screen(dis_screen)
+        if player_move==right:
+            if range_of_block != move_right(screen_phu,block,range_of_block) or kiem_tra_khong_trung_screen(main_screen,merge_block_with_screen(screen_phu,block,move_right(screen_phu,block,range_of_block))) :
+                range_of_block=move_right(screen_phu,block,range_of_block)
+                dis_screen=merge_block_with_screen(main_screen,block,range_of_block)
+                time.sleep(0.1)
+                os.system("clear")
+                display_screen(dis_screen)
+        if player_move==xoay:
+            if  kiem_tra_khong_trung_screen(main_screen,merge_block_with_screen(screen_phu,xoay_block_90(block),range_of_block)) :
+                block=xoay_block_90(block)
+                dis_screen=merge_block_with_screen(main_screen,block,range_of_block)
+                time.sleep(0.1)
+                os.system("clear")
+                display_screen(dis_screen)
+        if player_move==" ":
+            while True:
+                if range_of_block == down_1_line(screen_phu,block,range_of_block) or not kiem_tra_khong_trung_screen(main_screen,merge_block_with_screen(screen_phu,block,down_1_line(screen_phu,block,range_of_block))) :
+                    break      
+                range_of_block=down_1_line(screen_phu,block,range_of_block)
+            dis_screen=merge_block_with_screen(main_screen,block,range_of_block)
+            os.system("clear")
+            display_screen(dis_screen)
+            break
+        if range_of_block == down_1_line(screen_phu,block,range_of_block) or not kiem_tra_khong_trung_screen(main_screen,merge_block_with_screen(screen_phu,block,move_left(screen_phu,block,range_of_block))) :
             break      
-        range_of_block=move_left(screen_phu,block,range_of_block)
+        range_of_block=down_1_line(screen_phu,block,range_of_block)
         dis_screen=merge_block_with_screen(main_screen,block,range_of_block)
-        time.sleep(0.3)
+        time.sleep(0.1)
         os.system("clear")
         display_screen(dis_screen)
     main_screen=merge_block_with_screen(main_screen,block,range_of_block)
