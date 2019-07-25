@@ -6,6 +6,7 @@ import copy
 import readchar
 import threading
 import queue
+import datetime
 
 
 screen=[ [" "," "," "," "," "," "," "," "," "," "],
@@ -89,7 +90,6 @@ def merge_block_with_screen(screen_phu,block_x,range_of_block):
 #input: screen [][]
 #kiểm tra rồi
 def display_screen(screen_,score):
-    time.sleep(0.5)
     os.system("clear")
     merge_scr=[]
     thread_println("######")
@@ -154,8 +154,12 @@ def down_1_line(screen_phu,block,range_of_block):
 ######################################
 #input: block
 #output: new block
-def xoay_block_90(block):
+def xoay_block_90(block,range_of_block):
     block1=copy.deepcopy(block)
+    if range_of_block[1]<0:
+        range_of_block[1]=0
+    if range_of_block[1]>10-len(block):
+        range_of_block[1]=10-len(block)
     for row in range(len(block)):
         for colum in range(len(block[row])):
             block1[colum][row]=block[row][colum]
@@ -163,7 +167,7 @@ def xoay_block_90(block):
     for row in range(len(block)):
         for colum in range(len(block[row])):
             block2[row][colum]=block1[row][len(block[row])-1-colum]
-    return block2
+    return block2,range_of_block
 
 #kiểm tra new-screen với screen chính có bị trùng nhau không
 #input: screen chính và new-screen
@@ -248,8 +252,8 @@ def compare_to_move_right(main_screen,block,range_of_block,score,player_move):
 
 def  compare_to_move_xoay(main_screen,block,range_of_block,score,player_move):
     if player_move=="w":
-        if  kiem_tra_khong_trung_screen(main_screen,merge_block_with_screen(screen_phu,xoay_block_90(block),range_of_block)) :
-            block=xoay_block_90(block)
+        if  kiem_tra_khong_trung_screen(main_screen,merge_block_with_screen(screen_phu,xoay_block_90(block,range_of_block),range_of_block)) :
+            block,range_of_block=xoay_block_90(block,range_of_block)
             dis_screen=merge_block_with_screen(main_screen,block,range_of_block)
             time.sleep(1)                
             display_screen(dis_screen,score)
@@ -277,19 +281,27 @@ def read_character():
 def thread_println(str):
     print('\r'+str)
 
+def next_to_down_1_line(main_screen,block,range_of_block,score): 
+    range_of_block=down_1_line(main_screen,block,range_of_block)
+    dis_screen=merge_block_with_screen(main_screen,block,range_of_block)
+    display_screen(dis_screen,score)
+    return main_screen,range_of_block
+
+
 def loop_down_1_line(main_screen,block,range_of_block,score):
+    pre_sec=datetime.datetime.now().second
     while True:
-        if not input_queue.empty():    
-            player_move= input_queue.get()#phải có tác động từ bàn phím thì chương trình mới tiếp tục
-            range_of_block=compare_to_move_left(main_screen,block,range_of_block,score,player_move)
-            range_of_block=compare_to_move_right(main_screen,block,range_of_block,score,player_move)
-            block=compare_to_move_xoay(main_screen,block,range_of_block,score,player_move)
-            range_of_block=compare_to_drop(main_screen,block,range_of_block,score,player_move)        
+        while pre_sec==datetime.datetime.now().second:
+            if not input_queue.empty():    
+                player_move= input_queue.get()#phải có tác động từ bàn phím thì chương trình mới tiếp tục
+                range_of_block=compare_to_move_left(main_screen,block,range_of_block,score,player_move)
+                range_of_block=compare_to_move_right(main_screen,block,range_of_block,score,player_move)
+                block=compare_to_move_xoay(main_screen,block,range_of_block,score,player_move)
+                range_of_block=compare_to_drop(main_screen,block,range_of_block,score,player_move)        
+        pre_sec=datetime.datetime.now().second
         if range_of_block == down_1_line(screen_phu,block,range_of_block) or not kiem_tra_khong_trung_screen(main_screen,merge_block_with_screen(screen_phu,block,down_1_line(screen_phu,block,range_of_block))) :
-            break  
-        range_of_block=down_1_line(main_screen,block,range_of_block)
-        dis_screen=merge_block_with_screen(main_screen,block,range_of_block)
-        display_screen(dis_screen,score)
+            break 
+        main_screen,range_of_block=next_to_down_1_line(main_screen,block,range_of_block,score)
     return range_of_block,block
 
 
