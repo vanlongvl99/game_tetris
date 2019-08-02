@@ -1,12 +1,5 @@
 from random import randrange
-import os 
-import time
-import datetime
-import copy
-import readchar
-import threading
-import queue
-import datetime
+import os , time, datetime, copy, readchar, threading, queue, datetime
 
 
 screen = [ [" "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," ",],
@@ -96,7 +89,7 @@ def display_screen(screen_,score):
     for row in range(len(merge_scr)):
         thread_println("|"+merge_scr[row]+"|")
     thread_println("=======================")
-    thread_println("Ps: w: rotate, a: move left, d: move right")
+    thread_println("Ps: w: rotate, a: move left, s: down faster d: move right")
     thread_println("Ps: x and Ctrl + z to exit the program")
 
 #dich trai:
@@ -145,11 +138,11 @@ def down_1_line(screen_phu,block,range_of_block):
     else:  
         return range_new
  
-#xoay 90 độ
+#rotate 90 độ
 ######################################
 #input: block
 #output: new block
-def xoay_block_90(screen,block,range_of_block):
+def rotate_block_90(screen,block,range_of_block):
     block1 = copy.deepcopy(block)
     if range_of_block[1]<0:
         range_of_block[1] = 0
@@ -169,9 +162,6 @@ def xoay_block_90(screen,block,range_of_block):
 #output: True or False
 #kiểm tra rồi
 def kiem_tra_khong_trung_screen(main_screen,next_screen):
-    #for colum in range(len(next_screen[0])):
-    #    if next_screen[len(next_screen)-1][colum] == "$":
-    #        return False
     linh_canh = 0
     for row in range(len(main_screen)):
         for colum in range(len(main_screen[row])):
@@ -250,18 +240,18 @@ def compare_to_move_right(main_screen,block,range_of_block,score,player_move):
                 display_screen(dis_screen,score)
     return range_of_block
 
-def  compare_to_move_xoay(main_screen,block,range_of_block,score,player_move):
+def  compare_to_move_rotate(main_screen,block,range_of_block,score,player_move):
     if player_move == "w":
-        block_xoay = xoay_block_90(screen,block,range_of_block)
-        screen_xoay = merge_block_with_screen(screen_phu,block_xoay,range_of_block)
-        if  kiem_tra_khong_trung_screen(main_screen,screen_xoay) :
-            block,range_of_block = block_xoay
+        block_rotate = rotate_block_90(screen,block,range_of_block)
+        screen_rotate = merge_block_with_screen(screen_phu,block_rotate,range_of_block)
+        if  kiem_tra_khong_trung_screen(main_screen,screen_rotate) :
+            block,range_of_block = block_rotate
             dis_screen = merge_block_with_screen(main_screen,block,range_of_block)
             time.sleep(0.01)                
             display_screen(dis_screen,score)
     return block
 
-def  compare_to_drop(main_screen,block,range_of_block,score,player_move):
+def  compare_to_drop_all(main_screen,block,range_of_block,score,player_move):
     if player_move == " ":
         while True:
             range_down = down_1_line(screen_phu,block,range_of_block)
@@ -273,6 +263,15 @@ def  compare_to_drop(main_screen,block,range_of_block,score,player_move):
             range_of_block = range_down
         dis_screen = merge_block_with_screen(main_screen,block,range_of_block)
         display_screen(dis_screen,score)
+    return range_of_block
+
+def compare_to_drop_faster(main_screen,block,range_of_block,score,player_move):
+    if player_move == "s":
+        if range_of_block  ==  down_1_line(screen_phu,block,range_of_block): 
+            return range_of_block
+        if not kiem_tra_khong_trung_screen(main_screen,merge_block_with_screen(screen_phu,block,down_1_line(screen_phu,block,range_of_block))) :
+            return range_of_block
+        range_of_block = next_to_down_1_line(main_screen,block,range_of_block,score) 
     return range_of_block
 
 ######test_không có tác động từ bàn phím#####
@@ -291,7 +290,7 @@ def next_to_down_1_line(main_screen,block,range_of_block,score):
     range_of_block = down_1_line(main_screen,block,range_of_block)
     dis_screen = merge_block_with_screen(main_screen,block,range_of_block)
     display_screen(dis_screen,score)
-    return main_screen,range_of_block
+    return range_of_block
     
 def loop_down_1_line(main_screen,block,range_of_block,score):
     pre_sec = datetime.datetime.now().second
@@ -301,14 +300,15 @@ def loop_down_1_line(main_screen,block,range_of_block,score):
                 player_move =  input_queue.get()#phải có tác động từ bàn phím thì chương trình mới tiếp tục
                 range_of_block = compare_to_move_left(main_screen,block,range_of_block,score,player_move)
                 range_of_block = compare_to_move_right(main_screen,block,range_of_block,score,player_move)
-                block = compare_to_move_xoay(main_screen,block,range_of_block,score,player_move)
-                range_of_block = compare_to_drop(main_screen,block,range_of_block,score,player_move)        
+                block = compare_to_move_rotate(main_screen,block,range_of_block,score,player_move)
+                range_of_block = compare_to_drop_all(main_screen,block,range_of_block,score,player_move)
+                range_of_block = compare_to_drop_faster(main_screen,block,range_of_block,score,player_move)     
         pre_sec = datetime.datetime.now().second
         if range_of_block  ==  down_1_line(screen_phu,block,range_of_block): 
             break
         if not kiem_tra_khong_trung_screen(main_screen,merge_block_with_screen(screen_phu,block,down_1_line(screen_phu,block,range_of_block))) :
             break
-        main_screen,range_of_block = next_to_down_1_line(main_screen,block,range_of_block,score)
+        range_of_block = next_to_down_1_line(main_screen,block,range_of_block,score)
     return range_of_block,block
 
 
