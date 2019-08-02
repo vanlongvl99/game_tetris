@@ -89,7 +89,7 @@ def display_screen(screen_,score):
         #    string_row += screen_[row][colum]
         #merge_scr.append(string_row) 
             if screen_[row][colum] == "$":
-                print("\033[0;33;43m $\033[0m",end = "")
+                print("\033[0;35;45m $\033[0m",end = "")
             else:
                 print(" ",end = " ")
         print("||")
@@ -151,8 +151,8 @@ def rotate_block_90(screen,block,range_of_block):
     block1 = copy.deepcopy(block)
     if range_of_block[1]<0:
         range_of_block[1] = 0
-    if range_of_block[1]>len(screen)-len(block):
-        range_of_block[1] = len(screen)-len(block)
+    if range_of_block[1]>len(screen[0])-len(block):
+        range_of_block[1] = len(screen[0])-len(block)
     for row in range(len(block)):
         for colum in range(len(block[row])):
             block1[colum][row] = block[row][colum]
