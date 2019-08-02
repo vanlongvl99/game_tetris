@@ -2,26 +2,26 @@ from random import randrange
 import os , time, datetime, copy, readchar, threading, queue, datetime
 
 
-screen = [ [" "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," ",],
-         [" "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," ",],
-         [" "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," ",],
-         [" "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," ",],
-         [" "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," ",],
-         [" "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," ",],
-         [" "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," ",],
-         [" "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," ",],
-         [" "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," ",],
-         [" "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," ",],
-         [" "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," ",],
-         [" "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," ",],
-         [" "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," ",],
-         [" "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," ",],
-         [" "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," ",],
-         [" "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," ",],
-         [" "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," ",],
-         [" "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," ",],
-         [" "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," ",],
-         [" "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," ",]]
+screen = [ [" "," "," "," "," "," "," "," "," "," "," "," "," "," "," ",],
+           [" "," "," "," "," "," "," "," "," "," "," "," "," "," "," ",],
+           [" "," "," "," "," "," "," "," "," "," "," "," "," "," "," ",],
+           [" "," "," "," "," "," "," "," "," "," "," "," "," "," "," ",],
+           [" "," "," "," "," "," "," "," "," "," "," "," "," "," "," ",],
+           [" "," "," "," "," "," "," "," "," "," "," "," "," "," "," ",],
+           [" "," "," "," "," "," "," "," "," "," "," "," "," "," "," ",],
+           [" "," "," "," "," "," "," "," "," "," "," "," "," "," "," ",],
+           [" "," "," "," "," "," "," "," "," "," "," "," "," "," "," ",],
+           [" "," "," "," "," "," "," "," "," "," "," "," "," "," "," ",],
+           [" "," "," "," "," "," "," "," "," "," "," "," "," "," "," ",],
+           [" "," "," "," "," "," "," "," "," "," "," "," "," "," "," ",],
+           [" "," "," "," "," "," "," "," "," "," "," "," "," "," "," ",],
+           [" "," "," "," "," "," "," "," "," "," "," "," "," "," "," ",],
+           [" "," "," "," "," "," "," "," "," "," "," "," "," "," "," ",],
+           [" "," "," "," "," "," "," "," "," "," "," "," "," "," "," ",],
+           [" "," "," "," "," "," "," "," "," "," "," "," "," "," "," ",],
+           [" "," "," "," "," "," "," "," "," "," "," "," "," "," "," ",],
+           [" "," "," "," "," "," "," "," "," "," "," "," "," "," "," ",],
+           [" "," "," "," "," "," "," "," "," "," "," "," "," "," "," ",]]
 
 block_0 = [["$","$"],
          ["$","$"]]
@@ -80,15 +80,22 @@ def merge_block_with_screen(screen_phu,block_x,range_of_block):
 def display_screen(screen_,score):
     os.system("clear")
     merge_scr = []
-    thread_println("\n======================: Your score: "+str(score[0]))
+    thread_println("\nYour score:"+str(score[0]))
+    thread_println("================================")
     for row in range(len(screen_)):
-        string_row = ""
+        print("\r||",end = "")
+        #string_row = ""
         for colum in range(len(screen_[row])):
-            string_row += screen_[row][colum]
-        merge_scr.append(string_row) 
-    for row in range(len(merge_scr)):
-        thread_println("|"+merge_scr[row]+"|")
-    thread_println("=======================")
+        #    string_row += screen_[row][colum]
+        #merge_scr.append(string_row) 
+            if screen_[row][colum] == "$":
+                print("\033[0;33;43m $\033[0m",end = "")
+            else:
+                print(" ",end = " ")
+        print("||")
+    #for row in range(len(merge_scr)):
+    #    thread_println("|"+merge_scr[row]+"|")
+    thread_println("=================================")
     thread_println("Ps: w: rotate, a: move left, s: down faster d: move right")
     thread_println("Ps: x and Ctrl + z to exit the program")
 
@@ -100,7 +107,6 @@ def move_left(screen_phu,block_x,range_of_block):
     new_screen = copy.deepcopy(screen_phu)
     new_screen = merge_block_with_screen(screen_phu,block_x,range_of_block)
     range_new = copy.deepcopy(range_of_block)
-    linh_canh = 1
     for row in range(len(new_screen)):
         if new_screen[row][0]=="$":
             return range_new
@@ -115,7 +121,6 @@ def move_right(screen_phu,block_x,range_of_block):
     new_screen = copy.deepcopy(screen_phu)
     new_screen = merge_block_with_screen(screen_phu,block_x,range_of_block)
     range_new = copy.deepcopy(range_of_block)
-    linh_canh = 1
     for row in range(len(new_screen)):
         if new_screen[row][len(new_screen[row])-1]=="$":
             return range_new
@@ -292,7 +297,7 @@ def next_to_down_1_line(main_screen,block,range_of_block,score):
     display_screen(dis_screen,score)
     return range_of_block
     
-def loop_down_1_line(main_screen,block,range_of_block,score):
+def loop_down_1_line_and_get_input(main_screen,block,range_of_block,score):
     pre_sec = datetime.datetime.now().second
     while True:
         while pre_sec == datetime.datetime.now().second:
@@ -319,7 +324,7 @@ def input_keyboard(main_screen,block,range_of_block,score,input_queue):
         screen_phu = copy.deepcopy(screen)
         new_scr = merge_block_with_screen(screen_phu,block,range_of_block)
         dis_screen = merge_block_with_screen(main_screen,block,range_of_block)
-        range_of_block,block = loop_down_1_line(main_screen,block,range_of_block,score)
+        range_of_block,block = loop_down_1_line_and_get_input(main_screen,block,range_of_block,score)
         main_screen = merge_block_with_screen(main_screen,block,range_of_block)
         kiem_tra_hang_day(main_screen,score)
         display_screen(main_screen,score)        
