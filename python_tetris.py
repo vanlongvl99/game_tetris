@@ -87,10 +87,7 @@ def merge_block_with_screen(screen_phu,block_x,range_of_block):
 def display_screen(screen_,score):
     os.system("clear")
     merge_scr = []
-    thread_println("######")
-    thread_println("#"+str(score[0])+"#")
-    thread_println("######")
-    thread_println("======================\n")
+    thread_println("\n======================: Your score: "+str(score[0]))
     for row in range(len(screen_)):
         string_row = ""
         for colum in range(len(screen_[row])):
@@ -99,6 +96,8 @@ def display_screen(screen_,score):
     for row in range(len(merge_scr)):
         thread_println("|"+merge_scr[row]+"|")
     thread_println("=======================")
+    thread_println("Ps: w: rotate, a: move left, d: move right")
+    thread_println("Ps: x and Ctrl + z to exit the program")
 
 #dich trai:
 #input: screen and block, range of block
@@ -140,7 +139,7 @@ def down_1_line(screen_phu,block,range_of_block):
         for colum in range(len(block[row])):
             if block[row][colum] == "$":
                 last_row = row
-    if range_of_block[0]<len(screen_phu)-last_row  :
+    if range_of_block[0]<len(screen_phu)-last_row - 1:
         range_new[0] += 1
         return range_new
     else:  
@@ -170,9 +169,9 @@ def xoay_block_90(screen,block,range_of_block):
 #output: True or False
 #kiểm tra rồi
 def kiem_tra_khong_trung_screen(main_screen,next_screen):
-    for colum in range(len(next_screen[0])):
-        if next_screen[len(next_screen)-1][colum] == "$":
-            return False
+    #for colum in range(len(next_screen[0])):
+    #    if next_screen[len(next_screen)-1][colum] == "$":
+    #        return False
     linh_canh = 0
     for row in range(len(main_screen)):
         for colum in range(len(main_screen[row])):
