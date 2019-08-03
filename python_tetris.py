@@ -2,26 +2,6 @@ from random import randrange
 import os , time, datetime, copy, readchar, threading, queue, datetime
 
 #tuple là gì
-screen = [ [" "," "," "," "," "," "," "," "," "," "," "," "," "," "," ",],
-           [" "," "," "," "," "," "," "," "," "," "," "," "," "," "," ",],
-           [" "," "," "," "," "," "," "," "," "," "," "," "," "," "," ",],
-           [" "," "," "," "," "," "," "," "," "," "," "," "," "," "," ",],
-           [" "," "," "," "," "," "," "," "," "," "," "," "," "," "," ",],
-           [" "," "," "," "," "," "," "," "," "," "," "," "," "," "," ",],
-           [" "," "," "," "," "," "," "," "," "," "," "," "," "," "," ",],
-           [" "," "," "," "," "," "," "," "," "," "," "," "," "," "," ",],
-           [" "," "," "," "," "," "," "," "," "," "," "," "," "," "," ",],
-           [" "," "," "," "," "," "," "," "," "," "," "," "," "," "," ",],
-           [" "," "," "," "," "," "," "," "," "," "," "," "," "," "," ",],
-           [" "," "," "," "," "," "," "," "," "," "," "," "," "," "," ",],
-           [" "," "," "," "," "," "," "," "," "," "," "," "," "," "," ",],
-           [" "," "," "," "," "," "," "," "," "," "," "," "," "," "," ",],
-           [" "," "," "," "," "," "," "," "," "," "," "," "," "," "," ",],
-           [" "," "," "," "," "," "," "," "," "," "," "," "," "," "," ",],
-           [" "," "," "," "," "," "," "," "," "," "," "," "," "," "," ",],
-           [" "," "," "," "," "," "," "," "," "," "," "," "," "," "," ",],
-           [" "," "," "," "," "," "," "," "," "," "," "," "," "," "," ",],
-           [" "," "," "," "," "," "," "," "," "," "," "," "," "," "," ",]]
 
 block_0 = [["$","$"],
          ["$","$"]]
@@ -52,6 +32,16 @@ block_6 = [["$","$"," "],
          [" ","$","$"],
          [" "," "," "]]
 
+def init_screen(row,colum):
+    row_screen = []
+    for col in range(colum):
+        row_screen.append(" ")
+    scr = []
+    for ro in range(row):
+        row_scr=copy.deepcopy(row_screen)
+        scr.append(row_scr)
+    return scr
+
 #random get new block
 #input: blocks[[[]]]
 #output: new_block[][]
@@ -81,7 +71,10 @@ def display_screen(screen_,score):
     os.system("clear")
     merge_scr = []
     thread_println("\nYour score:"+str(score[0]))
-    thread_println("================================")
+    line=""         # đường viền của screen
+    for col in range(len(screen_[0])*2+4):
+        line = line + "="
+    thread_println(line)
     for row in range(len(screen_)):
         print("\r||",end = "")
         for colum in range(len(screen_[row])):
@@ -90,10 +83,10 @@ def display_screen(screen_,score):
             else:
                 print(" ",end = " ")
         print("||")    #when print finish 1 row
-    thread_println("=================================")
+    thread_println(line)
     thread_println("Ps: w: rotate, a: move left, s: down faster d: move right")
     thread_println("Ps: x and Ctrl + z to exit the program")
-
+ 
 #dich trai:
 #input: screen and block, range of block
 #output: new_screen
@@ -105,7 +98,7 @@ def move_left(screen_phu,block_x,range_of_block):
     for row in range(len(new_screen)):
         if new_screen[row][0]=="$":  # when the block in the first colom, we can't move left
             return range_new
-    range_new[1] = range_new[1]-1
+    range_new[1] = range_new[1] - 1
     return range_new
     
 #dich phải:
@@ -326,6 +319,9 @@ def input_keyboard(main_screen,block,range_of_block,score,input_queue):
     thread_println("gameover")
 
 if __name__  ==  "__main__":
+    colum_of_scr=10
+    row_of_scr=25
+    screen=init_screen(row_of_scr,colum_of_scr)
     blocks = [block_0,block_1,block_2,block_3,block_4,block_5,block_6]
     range_of_block = [0,0]
     score = [0]
