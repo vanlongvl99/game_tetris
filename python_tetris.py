@@ -4,33 +4,33 @@ import os , time, datetime, copy, readchar, threading, queue, datetime
 #tuple là gì
 
 block_0 = [["$","$"],
-         ["$","$"]]
+          ["$","$"]]
           
 block_1 = [["$","$","$"],
-         [" ","$"," "],
-         [" "," "," "]]
+          [" ","$"," "],
+          [" "," "," "]]
         
 block_2 = [[" ","$","$"],
-         ["$","$"," "],
-         [" "," "," "]]
+          ["$","$"," "],
+          [" "," "," "]]
 
 block_3 = [["$"," "," "],
-         ["$","$","$"],
-         [" "," "," "]]
+          ["$","$","$"],
+          [" "," "," "]]
 
 block_4 = [[" "," "," "," "],
-         ["$","$","$","$"],
-         [" "," "," "," "],
-         [" "," "," "," "],]
+          ["$","$","$","$"],
+          [" "," "," "," "],
+          [" "," "," "," "],]
 
 
 block_5 = [[" "," ","$"],
-         ["$","$","$"],
-         [" "," "," "]]
+          ["$","$","$"],
+          [" "," "," "]]
 
 block_6 = [["$","$"," "],
-         [" ","$","$"],
-         [" "," "," "]]
+          [" ","$","$"],
+          [" "," "," "]]
 
 def init_screen(row,colum):
     row_screen = []
@@ -283,10 +283,10 @@ def next_to_down_1_line(main_screen,block,range_of_block,score):
     display_screen(dis_screen,score)
     return range_of_block
     
-def loop_down_1_line_and_get_input(main_screen,block,range_of_block,score):
-    pre_sec = datetime.datetime.now().second
+def loop_down_1_line_and_get_input(main_screen,block,range_of_block,score,level):
+    time_count = 0.0
     while True:
-        while pre_sec == datetime.datetime.now().second:
+        while int(time_count + score[0]*level) != 1:
             if not input_queue.empty():    
                 player_move =  input_queue.get()
                 range_of_block = compare_to_move_left(main_screen,block,range_of_block,score,player_move)
@@ -294,7 +294,9 @@ def loop_down_1_line_and_get_input(main_screen,block,range_of_block,score):
                 block = compare_to_move_rotate(main_screen,block,range_of_block,score,player_move)
                 range_of_block = compare_to_drop_all(main_screen,block,range_of_block,score,player_move)
                 range_of_block = compare_to_drop_faster(main_screen,block,range_of_block,score,player_move)     
-        pre_sec = datetime.datetime.now().second
+            time_count += 0.01
+            time.sleep(0.01)
+        time_count = 0
         if range_of_block  ==  down_1_line(screen_phu,block,range_of_block): 
             break
         if not kiem_tra_khong_trung_screen(main_screen,merge_block_with_screen(screen_phu,block,down_1_line(screen_phu,block,range_of_block))) :
@@ -303,14 +305,14 @@ def loop_down_1_line_and_get_input(main_screen,block,range_of_block,score):
     return range_of_block,block
 
 
-def input_keyboard(main_screen,block,range_of_block,score,input_queue):
+def input_keyboard(main_screen,block,range_of_block,score,input_queue,level):
     while True:
         input_queue.queue.clear()
         block = get_new_block(blocks,range_of_block)
         screen_phu = copy.deepcopy(screen)
         new_scr = merge_block_with_screen(screen_phu,block,range_of_block)
         dis_screen = merge_block_with_screen(main_screen,block,range_of_block)
-        range_of_block,block = loop_down_1_line_and_get_input(main_screen,block,range_of_block,score)
+        range_of_block,block = loop_down_1_line_and_get_input(main_screen,block,range_of_block,score,level)
         main_screen = merge_block_with_screen(main_screen,block,range_of_block)
         check_full_row(main_screen,score)
         display_screen(main_screen,score)        
@@ -320,7 +322,8 @@ def input_keyboard(main_screen,block,range_of_block,score,input_queue):
 
 if __name__  ==  "__main__":
     colum_of_scr=10
-    row_of_scr=25
+    row_of_scr=20
+    time_level = 0.05 #when you get 1 score, tetris down faster 0.05s
     screen=init_screen(row_of_scr,colum_of_scr)
     blocks = [block_0,block_1,block_2,block_3,block_4,block_5,block_6]
     range_of_block = [0,0]
@@ -329,7 +332,7 @@ if __name__  ==  "__main__":
     screen_phu = copy.deepcopy(screen)
     block = get_new_block(blocks,range_of_block)
     input_queue = queue.Queue()
-    loop_input  =  threading.Thread(target = input_keyboard, args = (main_screen,block,range_of_block,score,input_queue))
+    loop_input  =  threading.Thread(target = input_keyboard, args = (main_screen,block,range_of_block,score,input_queue,time_level))
     loop_read_character = threading.Thread(target = read_character)
     loop_input.start()
     loop_read_character.start()
