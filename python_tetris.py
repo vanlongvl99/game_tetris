@@ -60,7 +60,7 @@ def merge_block_with_screen(screen_phu,block_x,range_of_block):
     for row in range(len(block_x)):
         block_row = block_x[row]
         for colum in range(len(block_row)):
-            if block_row[colum] == "$":
+            if block_row[colum] != " ":
                 block_in_screen[row+range_of_block[0]][colum+range_of_block[1]] = "$"
     return block_in_screen
 
@@ -78,7 +78,7 @@ def display_screen(screen_,score):
     for row in range(len(screen_)):
         print("\r||",end = "")
         for colum in range(len(screen_[row])):
-            if screen_[row][colum] == "$":
+            if screen_[row][colum] != " ":
                 print("\033[0;32;42m $\033[0m",end = "")
             else:
                 print(" ",end = " ")
@@ -96,7 +96,7 @@ def move_left(screen_phu,block_x,range_of_block):
     new_screen = merge_block_with_screen(screen_phu,block_x,range_of_block)
     range_new = copy.deepcopy(range_of_block)
     for row in range(len(new_screen)):
-        if new_screen[row][0]=="$":  # when the block in the first colom, we can't move left
+        if new_screen[row][0]!= " ":  # when the block in the first colom, we can't move left
             return range_new
     range_new[1] = range_new[1] - 1
     return range_new
@@ -110,7 +110,7 @@ def move_right(screen_phu,block_x,range_of_block):
     new_screen = merge_block_with_screen(screen_phu,block_x,range_of_block)
     range_new = copy.deepcopy(range_of_block)
     for row in range(len(new_screen)):
-        if new_screen[row][len(new_screen[row])-1]=="$": #when the block in the last colum, we can't move right
+        if new_screen[row][len(new_screen[row])-1]!= " ": #when the block in the last colum, we can't move right
             return range_new
     range_new[1]+=1
     return range_new
@@ -123,7 +123,7 @@ def down_1_line(screen_phu,block,range_of_block):
     range_new = copy.deepcopy(range_of_block)
     for row in range(len(block)):
         for colum in range(len(block[row])):
-            if block[row][colum] == "$":
+            if block[row][colum] != " ":
                 last_row = row          # find the last row of block has character
     if range_of_block[0]<len(screen_phu)-last_row - 1: # this is the condition so that we can down i line
         range_new[0] += 1
@@ -158,8 +158,8 @@ def kiem_tra_khong_trung_screen(main_screen,next_screen):
     linh_canh = 0
     for row in range(len(main_screen)):
         for colum in range(len(main_screen[row])):
-            if next_screen[row][colum] == "$" :
-                if main_screen[row][colum] == "$":
+            if next_screen[row][colum] != " " :
+                if main_screen[row][colum] != " ":
                     linh_canh = 1
     if linh_canh == 1:   
         return False
@@ -171,13 +171,12 @@ def kiem_tra_khong_trung_screen(main_screen,next_screen):
 #output: main_screen
 #kiểm tra rồi
 def delete_row_i(main_screen,row_i):
-    for colum in range(len(main_screen[row_i])):
-        main_screen[row_i][colum] = " "          #edit all character of row i become " "
     for row in range(row_i,-1,-1):               # move all row above row i down 1 line
         for colum in range(len(main_screen[row])):
-            if main_screen[row][colum] == "$":
-                main_screen[row+1][colum] = "$"
-                main_screen[row][colum] = " "
+            if main_screen[row][colum] != " ":
+                main_screen[row][colum] = main_screen[row-1][colum]
+    for colum in range(len(main_screen[0])):
+        main_screen[0][colum] = " "   
     return main_screen
 
 #kiểm tra có hàng nào đầy k
@@ -203,7 +202,7 @@ def check_full_row(main_screen,score):
 #output: True or False
 def check_gameover(main_screen,block):
     for colum in range(3,3+len(block[0]),1):
-        if main_screen[0][colum] == "$":
+        if main_screen[0][colum] != " ":
             return True
     return False
 
@@ -282,18 +281,22 @@ def next_to_down_1_line(main_screen,block,range_of_block,score):
     dis_screen = merge_block_with_screen(main_screen,block,range_of_block)
     display_screen(dis_screen,score)
     return range_of_block
-    
+def compare_character_input(main_screen,block,range_of_block,score):
+    if not input_queue.empty():    
+        player_move =  input_queue.get()
+        range_of_block = compare_to_move_left(main_screen,block,range_of_block,score,player_move)
+        range_of_block = compare_to_move_right(main_screen,block,range_of_block,score,player_move)
+        block = compare_to_move_rotate(main_screen,block,range_of_block,score,player_move)
+        range_of_block = compare_to_drop_all(main_screen,block,range_of_block,score,player_move)
+        range_of_block = compare_to_drop_faster(main_screen,block,range_of_block,score,player_move)     
+    return block,range_of_block
+
+
 def loop_down_1_line_and_get_input(main_screen,block,range_of_block,score,level):
     time_count = 0.0
     while True:
         while int(time_count + score[0]*level) != 1:
-            if not input_queue.empty():    
-                player_move =  input_queue.get()
-                range_of_block = compare_to_move_left(main_screen,block,range_of_block,score,player_move)
-                range_of_block = compare_to_move_right(main_screen,block,range_of_block,score,player_move)
-                block = compare_to_move_rotate(main_screen,block,range_of_block,score,player_move)
-                range_of_block = compare_to_drop_all(main_screen,block,range_of_block,score,player_move)
-                range_of_block = compare_to_drop_faster(main_screen,block,range_of_block,score,player_move)     
+            block,range_of_block = compare_character_input(main_screen,block,range_of_block,score)
             time_count += 0.01
             time.sleep(0.01)
         time_count = 0
