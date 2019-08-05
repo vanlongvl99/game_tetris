@@ -32,6 +32,16 @@ block_6 = [["$","$"," "],
           [" ","$","$"],
           [" "," "," "]]
 
+color = [
+    "\033[0;31;41m $\033[0m",    #Text: Red, Background: Red
+    "\033[0;32;42m $\033[0m",    #Text: Green, Background: Green
+    "\033[0;33;43m $\033[0m",    #Text: Yellow, Background: Yellow
+    "\033[0;34;44m $\033[0m",    #Text: Blue, Background: Blue
+    "\033[0;35;45m $\033[0m",    #Text: Purple, Background: Purple
+    "\033[0;36;46m $\033[0m",    #Text: Cyan, Background: Cyan
+    "\033[0;37;47m $\033[0m"    #Text: White, Background: White
+]
+
 def init_screen(row,colum):
     row_screen = []
     for col in range(colum):
@@ -49,7 +59,13 @@ def init_screen(row,colum):
 def get_new_block(blocks,range_of_block):
     range_of_block[0] = 0
     range_of_block[1] = 3                        #khởi tạo lại giá trị ban đầu cho range của new block
-    return blocks[randrange(0,len(blocks))]
+    new_block = blocks[randrange(0,len(blocks))]
+    number = randrange(0,7)
+    for row in range(len(new_block)):
+        for colum in range(len(new_block[row])):
+            if new_block[row][colum] != " ":
+                new_block[row][colum] = number
+    return new_block
 
 #nhập block vào screen
 #input: screen and block, range of block
@@ -61,15 +77,14 @@ def merge_block_with_screen(screen_phu,block_x,range_of_block):
         block_row = block_x[row]
         for colum in range(len(block_row)):
             if block_row[colum] != " ":
-                block_in_screen[row+range_of_block[0]][colum+range_of_block[1]] = "$"
+                block_in_screen[row+range_of_block[0]][colum+range_of_block[1]] = block_row[colum]
     return block_in_screen
 
 #merge screen and display
 #input: screen [][]
 #kiểm tra rồi
-def display_screen(screen_,score):
+def display_screen(screen_,score,color):
     os.system("clear")
-    merge_scr = []
     thread_println("\nYour score:"+str(score[0]))
     line=""         # đường viền của screen
     for col in range(len(screen_[0])*2+4):
@@ -79,7 +94,8 @@ def display_screen(screen_,score):
         print("\r||",end = "")
         for colum in range(len(screen_[row])):
             if screen_[row][colum] != " ":
-                print("\033[0;32;42m $\033[0m",end = "")
+                num = screen_[row][colum]
+                print(color[num],end = "")
             else:
                 print(" ",end = " ")
         print("||")    #when print finish 1 row
@@ -216,7 +232,7 @@ def compare_to_move_left(main_screen,block,range_of_block,score,player_move):
                 range_of_block = range_left
                 dis_screen = merge_block_with_screen(main_screen,block,range_of_block)
                 time.sleep(0.01)
-                display_screen(dis_screen,score)
+                display_screen(dis_screen,score,color)
     return range_of_block
 
 
@@ -229,7 +245,7 @@ def compare_to_move_right(main_screen,block,range_of_block,score,player_move):
                 range_of_block = range_right
                 dis_screen = merge_block_with_screen(main_screen,block,range_of_block)                
                 time.sleep(0.01)
-                display_screen(dis_screen,score)
+                display_screen(dis_screen,score,color)
     return range_of_block
 
 def  compare_to_move_rotate(main_screen,block,range_of_block,score,player_move):
@@ -240,7 +256,7 @@ def  compare_to_move_rotate(main_screen,block,range_of_block,score,player_move):
             block,range_of_block = block_rotate
             dis_screen = merge_block_with_screen(main_screen,block,range_of_block)
             time.sleep(0.01)                
-            display_screen(dis_screen,score)
+            display_screen(dis_screen,score,color)
     return block
 
 def  compare_to_drop_all(main_screen,block,range_of_block,score,player_move):
@@ -254,7 +270,7 @@ def  compare_to_drop_all(main_screen,block,range_of_block,score,player_move):
                 break      
             range_of_block = range_down
         dis_screen = merge_block_with_screen(main_screen,block,range_of_block)
-        display_screen(dis_screen,score)
+        display_screen(dis_screen,score,color)
     return range_of_block
 
 def compare_to_drop_faster(main_screen,block,range_of_block,score,player_move):
@@ -279,8 +295,9 @@ def thread_println(str):
 def next_to_down_1_line(main_screen,block,range_of_block,score): 
     range_of_block = down_1_line(main_screen,block,range_of_block)
     dis_screen = merge_block_with_screen(main_screen,block,range_of_block)
-    display_screen(dis_screen,score)
+    display_screen(dis_screen,score,color)
     return range_of_block
+
 def compare_character_input(main_screen,block,range_of_block,score):
     if not input_queue.empty():    
         player_move =  input_queue.get()
@@ -318,12 +335,12 @@ def input_keyboard(main_screen,block,range_of_block,score,input_queue,level):
         range_of_block,block = loop_down_1_line_and_get_input(main_screen,block,range_of_block,score,level)
         main_screen = merge_block_with_screen(main_screen,block,range_of_block)
         check_full_row(main_screen,score)
-        display_screen(main_screen,score)        
+        display_screen(main_screen,score,color)        
         if check_gameover(main_screen,block):
             break
     thread_println("gameover")
 
-if __name__  ==  "__main__":
+if __name__ == "__main__":    
     colum_of_scr=10
     row_of_scr=20
     time_level = 0.05 #when you get 1 score, tetris down faster 0.05s
