@@ -312,7 +312,7 @@ def compare_character_input(main_screen,block,range_of_block,score):
 def loop_down_1_line_and_get_input(main_screen,block,range_of_block,score,level):
     time_count = 0.0
     while True:
-        while int(time_count + score[0]*level) != 1:
+        while int(time_count + score[0]/3*level) != 1: #when you get 3 score, block down fast 0.1s
             block,range_of_block = compare_character_input(main_screen,block,range_of_block,score)
             time_count += 0.01
             time.sleep(0.01)
@@ -343,7 +343,7 @@ def input_keyboard(main_screen,block,range_of_block,score,input_queue,level):
 if __name__ == "__main__":    
     colum_of_scr=10
     row_of_scr=20
-    time_level = 0.05 #when you get 1 score, tetris down faster 0.05s
+    time_level = 0.1 #when you get 1 score, tetris down faster 0.05s
     screen=init_screen(row_of_scr,colum_of_scr)
     blocks = [block_0,block_1,block_2,block_3,block_4,block_5,block_6]
     range_of_block = [0,0]
