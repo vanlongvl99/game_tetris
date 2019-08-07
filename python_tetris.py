@@ -3,8 +3,8 @@ import os , time, datetime, copy, readchar, threading, queue, datetime
 
 #tuple là gì
 
-block_0 = [["$","$"],
-          ["$","$"]]
+block_0 = [["$","$",],
+          ["$","$",]]
           
 block_1 = [["$","$","$"],
           [" ","$"," "],
@@ -187,7 +187,7 @@ def kiem_tra_khong_trung_screen(main_screen,next_screen):
 #output: main_screen
 #kiểm tra rồi
 def delete_row_i(main_screen,row_i):
-    for row in range(row_i,-1,-1):               # move all row above row i down 1 line
+    for row in range(row_i,0,-1):               # move all row above row i down 1 line
         for colum in range(len(main_screen[row])):
             if main_screen[row][colum] != " ":
                 main_screen[row][colum] = main_screen[row-1][colum]
@@ -250,13 +250,19 @@ def compare_to_move_right(main_screen,block,range_of_block,score,player_move):
 
 def  compare_to_move_rotate(main_screen,block,range_of_block,score,player_move):
     if player_move == "w":
-        block_rotate = rotate_block_90(screen,block,range_of_block)
-        screen_rotate = merge_block_with_screen(screen_phu,block_rotate,range_of_block)
-        if  kiem_tra_khong_trung_screen(main_screen,screen_rotate) : 
-            block,range_of_block = block_rotate
-            dis_screen = merge_block_with_screen(main_screen,block,range_of_block)
-            time.sleep(0.01)                
-            display_screen(dis_screen,score,color)
+        block_rotate,range_x = rotate_block_90(screen,block,range_of_block)
+        last_row = 0
+        for row in range(len(block_rotate)):
+            for colum in range(len(block_rotate[row])):
+                if block_rotate[row][colum] != " ":
+                    last_row = row
+        if range_x[0] < len(main_screen) - last_row -1:
+            screen_rotate = merge_block_with_screen(screen_phu,block_rotate,range_of_block)        
+            if  kiem_tra_khong_trung_screen(main_screen,screen_rotate) : 
+                block,range_of_block = rotate_block_90(screen,block,range_of_block)
+                dis_screen = merge_block_with_screen(main_screen,block,range_of_block)
+                time.sleep(0.01)                
+                display_screen(dis_screen,score,color)
     return block
 
 def  compare_to_drop_all(main_screen,block,range_of_block,score,player_move):
