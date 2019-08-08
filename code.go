@@ -221,20 +221,26 @@ func CheckOverlapping(MainScreen [20][10]int, NewScr [20][10]int)bool{
 func DisplayScreen(screen_ [20][10]int,score []int ){
     ClearTerminal()
     fmt.Println("\nYour score:",score[0])
+    fmt.Println("==============")
     var ScreenMerge [20]string
     for row := range screen_{
+        ScreenMerge[row] += "||"
         for colum := range screen_[row]{
             character := strconv.Itoa(screen_[row][colum])  
             if character != "0"{
-                ScreenMerge[row] += character
+                ScreenMerge[row] += "$"
             }else{
                 ScreenMerge[row] += " "
             }
         }
+        ScreenMerge[row] += "||"
     }
 	for row := range ScreenMerge{
         fmt.Println(ScreenMerge[row])
     }     
+    fmt.Println("==============")
+    fmt.Println("Ps: w: rotate, a: move left, s: down faster d: move right")
+    fmt.Println("Ps: x and Ctrl + z to exit the program")
     // time.Sleep(300*time.Millisecond)
 } 
 
@@ -357,9 +363,10 @@ func CompareToRotate(MainScreen [20][10]int,EmptyScreen [20][10]int,block [][]in
 
 
 func LoopDown1Line(MainScreen [20][10]int,EmptyScreen [20][10]int,block [][]int,Locate []int,CommunicateChannel chan string,score []int )([][]int,[]int){
+    level := 0.1
     for{
         TimeCount := 0.0
-        for int(TimeCount) != 1 { 
+        for int(TimeCount + float64(score[0]/3)*level) != 1 { 
             select{
             case character,ok := <-CommunicateChannel:
                 if ok{
