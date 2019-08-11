@@ -1,3 +1,6 @@
+
+
+////// don't use struct and method
 package main
 import(
 	"fmt"
@@ -6,9 +9,6 @@ import(
     "os"
     "os/exec"
     "reflect"
-    // "strconv"
-    // "github.com/color-master"
-
 )
 
 var blocks = [][][]int{  // this has the pointer
@@ -43,16 +43,25 @@ var blocks = [][][]int{  // this has the pointer
 		
 } 
 
+var color = []string{
+    "",
+	"\033[0;31;41m[]\033[m",    //Text: Red, Background: Red
+    "\033[0;32;42m[]\033[m",    //Text: Green, Background: Green
+    "\033[0;33;43m[]\033[m",    //Text: Yellow, Background: Yellow
+    "\033[0;34;44m[]\033[m",    //Text: Blue, Background: Blue
+    "\033[0;35;45m[]\033[m",    //Text: Purple, Background: Purple
+    "\033[0;36;46m[]\033[m",    //Text: Cyan, Background: Cyan
+    "\033[0;37;47m[]\033[m"}    //Text: White, Background: White
+//
+
+
 //checked and this right
 func GetNewBlock(blocks [][][]int)([][]int,[]int){
 	LocationOfBlock := []int{0,3}
 	rand.Seed(time.Now().UnixNano())  //to random number
 	NumberBlock := rand.Intn(7)
 	block := blocks[NumberBlock]
-	num := rand.Intn(7)
-	for num == 0{
-		num = rand.Intn(7)  // the number has to difference with 0
-	}
+	num := rand.Intn(7) + 1
 	for row := range block{
 		for colum := range block[row]{
 			if block[row][colum] != 0{
@@ -212,7 +221,7 @@ func CheckOverlapping(MainScreen [20][10]int, NewScr [20][10]int)bool{
 }
 
 // checked and this right
-func DisplayScreen(screen_ [20][10]int,score []int ){
+func DisplayScreen(screen_ [20][10]int,score []int, color []string ){
     ClearTerminal()
     fmt.Println("\nYour score:",score[0])
     fmt.Println("========================")
@@ -220,20 +229,17 @@ func DisplayScreen(screen_ [20][10]int,score []int ){
 		fmt.Printf("||")
 		for colum := range screen_[row]{
 			if screen_[row][colum] != 0 {
-				// red := color.New(color.FgRed) //make the character is red
-				// RedBackground := red.Add(color.BgHiRed) //make the background is red
-		     		// RedBackground.Printf("  ")
-                fmt.Printf("\033[0;32;42m[]\033[m")
+                num := screen_[row][colum]
+                fmt.Printf(color[num])
             }else{
 				fmt.Printf("  ")
         	}
 		}
 		fmt.Printf("||\n")	
-
 	}
     fmt.Println("========================")
     fmt.Println("Ps: w: rotate, a: move left, s: down faster d: move right")
-    fmt.Println("Ps: x and Ctrl + z to exit the program")
+    fmt.Println("Ps:Ctrl + z to exit the program")
 } 
 
 
@@ -251,14 +257,14 @@ func CheckGameOver(MainScreen [20][10]int,block [][]int)bool{
     return false
 }
 
-func CompareToMoveLeft(MainScreen [20][10]int,EmptyScreen [20][10]int,block [][]int,Locate []int,character string ,score []int)([]int){
+func CompareToMoveLeft(MainScreen [20][10]int,EmptyScreen [20][10]int,block [][]int,Locate []int,character string ,score []int, color []string)([]int){
     if character == "a"{
         LocateLeft := MoveLeft(EmptyScreen,block,Locate)
         if reflect.DeepEqual(Locate,LocateLeft) == false{
             ScreenLeft := MergeScreenAndBlock(EmptyScreen,block,LocateLeft)
             if CheckOverlapping(MainScreen,ScreenLeft) == false{
                 DisScreen := MergeScreenAndBlock(MainScreen,block,LocateLeft)
-                DisplayScreen(DisScreen,score)
+                DisplayScreen(DisScreen,score, color)
                 time.Sleep(time.Millisecond)
                 return LocateLeft
             }
@@ -267,7 +273,7 @@ func CompareToMoveLeft(MainScreen [20][10]int,EmptyScreen [20][10]int,block [][]
     return Locate
 }
 
-func CompareToDropAll(MainScreen [20][10]int,EmptyScreen [20][10]int,block [][]int,Locate []int,character string,score []int )([]int){
+func CompareToDropAll(MainScreen [20][10]int,EmptyScreen [20][10]int,block [][]int,Locate []int,character string,score []int,color []string )([]int){
     if character == " "{
         for{
             LocateDown := Down1Line(EmptyScreen,block,Locate)
@@ -281,14 +287,14 @@ func CompareToDropAll(MainScreen [20][10]int,EmptyScreen [20][10]int,block [][]i
             Locate = LocateDown
         }
         DisScreen := MergeScreenAndBlock(MainScreen,block,Locate)
-        DisplayScreen(DisScreen,score)
+        DisplayScreen(DisScreen,score,color)
         time.Sleep(time.Millisecond)
 
     }
     return Locate
 }
 
-func CompareToDropFaster(MainScreen [20][10]int,EmptyScreen [20][10]int,block [][]int,Locate []int,character string,score []int )([]int){
+func CompareToDropFaster(MainScreen [20][10]int,EmptyScreen [20][10]int,block [][]int,Locate []int,character string,score []int,color []string )([]int){
     if character == "s"{
         LocateDown := Down1Line(EmptyScreen,block,Locate)
         if reflect.DeepEqual(Locate,LocateDown) == false{
@@ -296,7 +302,7 @@ func CompareToDropFaster(MainScreen [20][10]int,EmptyScreen [20][10]int,block []
             if CheckOverlapping(MainScreen,ScreenDown) == false{
                 Locate = LocateDown
                 DisScreen := MergeScreenAndBlock(MainScreen,block,Locate)
-                DisplayScreen(DisScreen,score)
+                DisplayScreen(DisScreen,score,color)
                 time.Sleep(time.Millisecond)
             }
         }
@@ -304,14 +310,14 @@ func CompareToDropFaster(MainScreen [20][10]int,EmptyScreen [20][10]int,block []
     return Locate
 }
 
-func CompareToMoveRight(MainScreen [20][10]int,EmptyScreen [20][10]int,block [][]int,Locate []int,character string,score []int )([]int){
+func CompareToMoveRight(MainScreen [20][10]int,EmptyScreen [20][10]int,block [][]int,Locate []int,character string,score []int,color []string )([]int){
     if character == "d"{
         LocateRight := MoveRight(EmptyScreen,block,Locate)
         if reflect.DeepEqual(Locate,LocateRight) == false{
             ScreenRight := MergeScreenAndBlock(EmptyScreen,block,LocateRight)
             if CheckOverlapping(MainScreen,ScreenRight) == false{
                 DisScreen := MergeScreenAndBlock(MainScreen,block,LocateRight)
-                DisplayScreen(DisScreen,score)
+                DisplayScreen(DisScreen,score,color)
                 time.Sleep(time.Millisecond)
                 return LocateRight
             }
@@ -320,7 +326,7 @@ func CompareToMoveRight(MainScreen [20][10]int,EmptyScreen [20][10]int,block [][
     return Locate
 }
 
-func CompareToRotate(MainScreen [20][10]int,EmptyScreen [20][10]int,block [][]int,Locate []int,character string ,score []int)([][]int ,[]int){
+func CompareToRotate(MainScreen [20][10]int,EmptyScreen [20][10]int,block [][]int,Locate []int,character string ,score []int,color []string)([][]int ,[]int){
     if character == "w"{
         BlockRotate,LocateRotate := RotateBlock90(EmptyScreen,block,Locate)
         LastRow := 0
@@ -338,7 +344,7 @@ func CompareToRotate(MainScreen [20][10]int,EmptyScreen [20][10]int,block [][]in
                 Locate = LocateRotate
                 DisScreen := MergeScreenAndBlock(MainScreen,block,Locate)
                 time.Sleep(10*time.Millisecond)
-                DisplayScreen(DisScreen,score)
+                DisplayScreen(DisScreen,score,color)
                 time.Sleep(time.Millisecond)
             }
         }
@@ -347,18 +353,18 @@ func CompareToRotate(MainScreen [20][10]int,EmptyScreen [20][10]int,block [][]in
 
 }
 
-func CompareCharacterInput(MainScreen [20][10]int,EmptyScreen [20][10]int,block [][]int,Locate []int ,score []int,CommunicateChannel chan string)([][]int ,[]int){
+func CompareCharacterInput(MainScreen [20][10]int,EmptyScreen [20][10]int,block [][]int,Locate []int ,score []int,CommunicateChannel chan string,color []string)([][]int ,[]int){
     level := 0.1
     TimeCount := 0.0
     for int(TimeCount + float64(score[0]/3)*level) != 1 { 
         select{
         case character,ok := <-CommunicateChannel:
             if ok{
-                Locate = CompareToMoveRight(MainScreen,EmptyScreen,block,Locate,character,score)      
-                Locate = CompareToMoveLeft(MainScreen,EmptyScreen,block,Locate,character,score)      
-                block,Locate = CompareToRotate(MainScreen,EmptyScreen,block,Locate,character,score)   
-                Locate = CompareToDropAll(MainScreen,EmptyScreen,block,Locate,character,score)      
-                Locate = CompareToDropFaster(MainScreen,EmptyScreen,block,Locate,character,score)
+                Locate = CompareToMoveRight(MainScreen,EmptyScreen,block,Locate,character,score,color)      
+                Locate = CompareToMoveLeft(MainScreen,EmptyScreen,block,Locate,character,score,color)      
+                block,Locate = CompareToRotate(MainScreen,EmptyScreen,block,Locate,character,score,color)   
+                Locate = CompareToDropAll(MainScreen,EmptyScreen,block,Locate,character,score,color)      
+                Locate = CompareToDropFaster(MainScreen,EmptyScreen,block,Locate,character,score,color)
             }else{         
             }
         default:
@@ -369,9 +375,9 @@ func CompareCharacterInput(MainScreen [20][10]int,EmptyScreen [20][10]int,block 
     return block,Locate     
 }
 
-func LoopDown1Line(MainScreen [20][10]int,EmptyScreen [20][10]int,block [][]int,Locate []int ,CommunicateChannel chan string,score []int )([][]int,[]int){
+func LoopDown1Line(MainScreen [20][10]int,EmptyScreen [20][10]int,block [][]int,Locate []int ,CommunicateChannel chan string,score []int,color []string )([][]int,[]int){
     for{
-        block,Locate = CompareCharacterInput(MainScreen,EmptyScreen,block,Locate,score,CommunicateChannel)  
+        block,Locate = CompareCharacterInput(MainScreen,EmptyScreen,block,Locate,score,CommunicateChannel,color)  
         LocateDown := Down1Line(EmptyScreen,block,Locate)
         if reflect.DeepEqual(Locate,LocateDown) {
             break
@@ -382,7 +388,7 @@ func LoopDown1Line(MainScreen [20][10]int,EmptyScreen [20][10]int,block [][]int,
         }
         Locate = LocateDown
         DisScreen := MergeScreenAndBlock(MainScreen,block,Locate)
-        DisplayScreen(DisScreen,score)
+        DisplayScreen(DisScreen,score,color)
     } 
     return block,Locate
 }
@@ -390,16 +396,15 @@ func LoopDown1Line(MainScreen [20][10]int,EmptyScreen [20][10]int,block [][]int,
 
 
 // thiếu clear CommunicationChannel
-func ScreenLoop(MainScreen [20][10]int,EmptyScreen [20][10]int,block [][]int,Locate []int,CommunicateChannel chan string,score []int){
+func ScreenLoop(MainScreen [20][10]int,EmptyScreen [20][10]int,block [][]int,Locate []int,CommunicateChannel chan string,score []int,color []string){
     for{
         block, Locate = GetNewBlock(blocks) 
-        block = blocks[6]
         DisScreen := MergeScreenAndBlock(MainScreen,block,Locate)
-        DisplayScreen(DisScreen,score)
-        block,Locate = LoopDown1Line(MainScreen,EmptyScreen,block,Locate,CommunicateChannel,score)
+        DisplayScreen(DisScreen,score,color)
+        block,Locate = LoopDown1Line(MainScreen,EmptyScreen,block,Locate,CommunicateChannel,score,color)
         MainScreen = MergeScreenAndBlock(MainScreen,block,Locate)
         MainScreen = CheckFullRow(MainScreen,score)
-        DisplayScreen(MainScreen,score)
+        DisplayScreen(MainScreen,score,color)
         if CheckGameOver(MainScreen,block){
             break
         }
@@ -425,9 +430,6 @@ func ReadKeyboard(CommunicateChannel chan string) {  // put the keyboard into ch
     for {
         character := ReadChar()
         CommunicateChannel <- character
-        if character == "x"{
-            break
-        }
     }
 }
 
@@ -437,9 +439,8 @@ func main(){
     var score = []int{0}
     CommunicateChannel := make(chan string)
     BlockX, Locate := GetNewBlock(blocks)
-    BlockX = blocks[6]
     go ReadKeyboard(CommunicateChannel)
-    ScreenLoop(MainScreen,EmptyScreen,BlockX,Locate,CommunicateChannel,score)
+    ScreenLoop(MainScreen,EmptyScreen,BlockX,Locate,CommunicateChannel,score,color)
     for{
         time.Sleep(time.Millisecond)
     }
