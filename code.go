@@ -7,7 +7,7 @@ import(
     "os/exec"
     "reflect"
     // "strconv"
-    "github.com/color-master"
+    // "github.com/color-master"
 
 )
 
@@ -219,10 +219,11 @@ func DisplayScreen(screen_ [20][10]int,score []int ){
 		fmt.Printf("||")
 		for colum := range screen_[row]{
 			if screen_[row][colum] != 0 {
-				red := color.New(color.FgRed) //make the character is red
-				RedBackground := red.Add(color.BgHiRed) //make the background is red
-		     		RedBackground.Printf("  ")
-			}else{
+				// red := color.New(color.FgRed) //make the character is red
+				// RedBackground := red.Add(color.BgHiRed) //make the background is red
+		     		// RedBackground.Printf("  ")
+                fmt.Printf("\033[0;32;42m[]\033[m")
+            }else{
 				fmt.Printf("  ")
         	}
 		}
@@ -434,6 +435,7 @@ func main(){
     var score = []int{0}
     CommunicateChannel := make(chan string)
     BlockX, Locate := GetNewBlock(blocks)
+
     go ReadKeyboard(CommunicateChannel)
     ScreenLoop(MainScreen,EmptyScreen,BlockX,Locate,CommunicateChannel,score)
     for{
