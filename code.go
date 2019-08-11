@@ -142,11 +142,12 @@ func MoveRight(EmptyScreen[20][10]int,block [][]int,Locate []int)[]int{
 
 // Checked and this right
 func RotateBlock90(EmptyScreen[20][10]int,block [][]int,Locate []int)([][]int, []int){
-    if Locate[1]<0{             // check index out of range when it rotate
-        Locate[1]=0
+    LocateRotate := CopyNewLoca(Locate)
+    if LocateRotate[1]<0{             // check index out of range when it rotate
+        LocateRotate[1]=0
     }
-    if Locate[1]>len(EmptyScreen[0])-len(block){  // check index out of range when it rotate
-        Locate[1] = len(EmptyScreen[0])-len(block)
+    if LocateRotate[1]>len(EmptyScreen[0])-len(block){  // check index out of range when it rotate
+        LocateRotate[1] = len(EmptyScreen[0])-len(block)
     }
     Block1 := CopyNewBlock(block)
     for row := range block{
@@ -161,7 +162,7 @@ func RotateBlock90(EmptyScreen[20][10]int,block [][]int,Locate []int)([][]int, [
             Block2[row][colum] = Block1[row][len(block[row]) -1 -colum]
         }
     }
-    return Block2, Locate
+    return Block2, LocateRotate
 }
 
 func DeleteRowI(screen_ [20][10]int, RowI int)[20][10]int {
@@ -392,6 +393,7 @@ func LoopDown1Line(MainScreen [20][10]int,EmptyScreen [20][10]int,block [][]int,
 func ScreenLoop(MainScreen [20][10]int,EmptyScreen [20][10]int,block [][]int,Locate []int,CommunicateChannel chan string,score []int){
     for{
         block, Locate = GetNewBlock(blocks) 
+        block = blocks[6]
         DisScreen := MergeScreenAndBlock(MainScreen,block,Locate)
         DisplayScreen(DisScreen,score)
         block,Locate = LoopDown1Line(MainScreen,EmptyScreen,block,Locate,CommunicateChannel,score)
@@ -435,7 +437,7 @@ func main(){
     var score = []int{0}
     CommunicateChannel := make(chan string)
     BlockX, Locate := GetNewBlock(blocks)
-
+    BlockX = blocks[6]
     go ReadKeyboard(CommunicateChannel)
     ScreenLoop(MainScreen,EmptyScreen,BlockX,Locate,CommunicateChannel,score)
     for{
