@@ -6,7 +6,9 @@ import(
     "os"
     "os/exec"
     "reflect"
-    "strconv"
+    // "strconv"
+    "github.com/color-master"
+
 )
 
 var blocks = [][][]int{  // this has the pointer
@@ -83,7 +85,7 @@ func CopyNewLoca(Locate []int)[]int{    // to copy new location
 }
 
 // checked and this right
-func MergeScreenAndBlock(screen_ [20][15]int,block [][]int,Locate []int)([20][15]int){
+func MergeScreenAndBlock(screen_ [20][10]int,block [][]int,Locate []int)([20][10]int){
 	BlockInScreen := screen_
 	for row := range block{
 		for colum := range block[row]{
@@ -96,7 +98,7 @@ func MergeScreenAndBlock(screen_ [20][15]int,block [][]int,Locate []int)([20][15
 	return BlockInScreen
 }
 
-func Down1Line(EmptyScreen [20][15]int,block [][]int,Locate []int)[]int{
+func Down1Line(EmptyScreen [20][10]int,block [][]int,Locate []int)[]int{
     LastRow :=0
     LocateDown := CopyNewLoca(Locate)
     for row := range block{
@@ -113,7 +115,7 @@ func Down1Line(EmptyScreen [20][15]int,block [][]int,Locate []int)[]int{
     return LocateDown
 }
 
-func MoveLeft(EmptyScreen[20][15]int,block [][]int,Locate []int)[]int{
+func MoveLeft(EmptyScreen[20][10]int,block [][]int,Locate []int)[]int{
     LocateLeft := CopyNewLoca(Locate)
     NewScr := MergeScreenAndBlock(EmptyScreen,block,LocateLeft)
     for row := range NewScr{
@@ -126,7 +128,7 @@ func MoveLeft(EmptyScreen[20][15]int,block [][]int,Locate []int)[]int{
 }
 
 
-func MoveRight(EmptyScreen[20][15]int,block [][]int,Locate []int)[]int{
+func MoveRight(EmptyScreen[20][10]int,block [][]int,Locate []int)[]int{
     LocateRight := CopyNewLoca(Locate)
     NewScr := MergeScreenAndBlock(EmptyScreen,block,LocateRight)
     for row := range NewScr{
@@ -139,7 +141,7 @@ func MoveRight(EmptyScreen[20][15]int,block [][]int,Locate []int)[]int{
 }
 
 // Checked and this right
-func RotateBlock90(EmptyScreen[20][15]int,block [][]int,Locate []int)([][]int, []int){
+func RotateBlock90(EmptyScreen[20][10]int,block [][]int,Locate []int)([][]int, []int){
     if Locate[1]<0{             // check index out of range when it rotate
         Locate[1]=0
     }
@@ -162,7 +164,7 @@ func RotateBlock90(EmptyScreen[20][15]int,block [][]int,Locate []int)([][]int, [
     return Block2, Locate
 }
 
-func DeleteRowI(screen_ [20][15]int, RowI int)[20][15]int {
+func DeleteRowI(screen_ [20][10]int, RowI int)[20][10]int {
     for row := RowI; row >0; row = row -1{
         for colum := range screen_[row]{
                 screen_[row][colum] = screen_[row -1][colum]    
@@ -174,7 +176,7 @@ func DeleteRowI(screen_ [20][15]int, RowI int)[20][15]int {
     return screen_
 }
 
-func CheckFullRow(screen_ [20][15]int,score []int)[20][15]int{
+func CheckFullRow(screen_ [20][10]int,score []int)[20][10]int{
     for row := range screen_{
         LinhCanh := 1
         for colum := range screen_[row]{
@@ -190,7 +192,7 @@ func CheckFullRow(screen_ [20][15]int,score []int)[20][15]int{
     return screen_
 }
 
-func CheckOverlapping(MainScreen [20][15]int, NewScr [20][15]int)bool{
+func CheckOverlapping(MainScreen [20][10]int, NewScr [20][10]int)bool{
     LinhCanh :=0
     for row := range MainScreen{
         for colum := range MainScreen[row]{
@@ -209,38 +211,36 @@ func CheckOverlapping(MainScreen [20][15]int, NewScr [20][15]int)bool{
 }
 
 // checked and this right
-func DisplayScreen(screen_ [20][15]int,score []int ){
+func DisplayScreen(screen_ [20][10]int,score []int ){
     ClearTerminal()
     fmt.Println("\nYour score:",score[0])
-    fmt.Println("===================")
-    var ScreenMerge [20]string
+    fmt.Println("========================")
     for row := range screen_{
-        ScreenMerge[row] += "||"
-        for colum := range screen_[row]{
-            character := strconv.Itoa(screen_[row][colum])  
-            if character != "0"{
-                ScreenMerge[row] += "$"
-            }else{
-                ScreenMerge[row] += " "
-            }
-        }
-        ScreenMerge[row] += "||"
-    }
-	for row := range ScreenMerge{
-        fmt.Println(ScreenMerge[row])
-    }     
-    fmt.Println("===================")
+		fmt.Printf("||")
+		for colum := range screen_[row]{
+			if screen_[row][colum] != 0 {
+				red := color.New(color.FgRed) //make the character is red
+				RedBackground := red.Add(color.BgHiRed) //make the background is red
+		     		RedBackground.Printf("  ")
+			}else{
+				fmt.Printf("  ")
+        	}
+		}
+		fmt.Printf("||\n")	
+
+	}
+    fmt.Println("========================")
     fmt.Println("Ps: w: rotate, a: move left, s: down faster d: move right")
     fmt.Println("Ps: x and Ctrl + z to exit the program")
-    // time.Sleep(300*time.Millisecond)
 } 
+
 
 func ClearTerminal(){
 	clear := exec.Command("clear")
 	clear.Stdout = os.Stdout
 	clear.Run()
 }
-func CheckGameOver(MainScreen [20][15]int,block [][]int)bool{
+func CheckGameOver(MainScreen [20][10]int,block [][]int)bool{
     for colum :=3; colum<3+len(block); colum++{
         if MainScreen[0][colum] != 0{
             return true
@@ -249,7 +249,7 @@ func CheckGameOver(MainScreen [20][15]int,block [][]int)bool{
     return false
 }
 
-func CompareToMoveLeft(MainScreen [20][15]int,EmptyScreen [20][15]int,block [][]int,Locate []int,character string ,score []int)([]int){
+func CompareToMoveLeft(MainScreen [20][10]int,EmptyScreen [20][10]int,block [][]int,Locate []int,character string ,score []int)([]int){
     if character == "a"{
         LocateLeft := MoveLeft(EmptyScreen,block,Locate)
         if reflect.DeepEqual(Locate,LocateLeft) == false{
@@ -265,7 +265,7 @@ func CompareToMoveLeft(MainScreen [20][15]int,EmptyScreen [20][15]int,block [][]
     return Locate
 }
 
-func CompareToDropAll(MainScreen [20][15]int,EmptyScreen [20][15]int,block [][]int,Locate []int,character string,score []int )([]int){
+func CompareToDropAll(MainScreen [20][10]int,EmptyScreen [20][10]int,block [][]int,Locate []int,character string,score []int )([]int){
     if character == " "{
         for{
             LocateDown := Down1Line(EmptyScreen,block,Locate)
@@ -286,7 +286,7 @@ func CompareToDropAll(MainScreen [20][15]int,EmptyScreen [20][15]int,block [][]i
     return Locate
 }
 
-func CompareToDropFaster(MainScreen [20][15]int,EmptyScreen [20][15]int,block [][]int,Locate []int,character string,score []int )([]int){
+func CompareToDropFaster(MainScreen [20][10]int,EmptyScreen [20][10]int,block [][]int,Locate []int,character string,score []int )([]int){
     if character == "s"{
         LocateDown := Down1Line(EmptyScreen,block,Locate)
         if reflect.DeepEqual(Locate,LocateDown) == false{
@@ -302,7 +302,7 @@ func CompareToDropFaster(MainScreen [20][15]int,EmptyScreen [20][15]int,block []
     return Locate
 }
 
-func CompareToMoveRight(MainScreen [20][15]int,EmptyScreen [20][15]int,block [][]int,Locate []int,character string,score []int )([]int){
+func CompareToMoveRight(MainScreen [20][10]int,EmptyScreen [20][10]int,block [][]int,Locate []int,character string,score []int )([]int){
     if character == "d"{
         LocateRight := MoveRight(EmptyScreen,block,Locate)
         if reflect.DeepEqual(Locate,LocateRight) == false{
@@ -318,7 +318,7 @@ func CompareToMoveRight(MainScreen [20][15]int,EmptyScreen [20][15]int,block [][
     return Locate
 }
 
-func CompareToRotate(MainScreen [20][15]int,EmptyScreen [20][15]int,block [][]int,Locate []int,character string ,score []int)([][]int ,[]int){
+func CompareToRotate(MainScreen [20][10]int,EmptyScreen [20][10]int,block [][]int,Locate []int,character string ,score []int)([][]int ,[]int){
     if character == "w"{
         BlockRotate,LocateRotate := RotateBlock90(EmptyScreen,block,Locate)
         LastRow := 0
@@ -335,7 +335,7 @@ func CompareToRotate(MainScreen [20][15]int,EmptyScreen [20][15]int,block [][]in
                 block = BlockRotate
                 Locate = LocateRotate
                 DisScreen := MergeScreenAndBlock(MainScreen,block,Locate)
-                time.Sleep(15*time.Millisecond)
+                time.Sleep(10*time.Millisecond)
                 DisplayScreen(DisScreen,score)
                 time.Sleep(time.Millisecond)
             }
@@ -345,7 +345,7 @@ func CompareToRotate(MainScreen [20][15]int,EmptyScreen [20][15]int,block [][]in
 
 }
 
-func CompareCharacterInput(MainScreen [20][15]int,EmptyScreen [20][15]int,block [][]int,Locate []int ,score []int,CommunicateChannel chan string)([][]int ,[]int){
+func CompareCharacterInput(MainScreen [20][10]int,EmptyScreen [20][10]int,block [][]int,Locate []int ,score []int,CommunicateChannel chan string)([][]int ,[]int){
     level := 0.1
     TimeCount := 0.0
     for int(TimeCount + float64(score[0]/3)*level) != 1 { 
@@ -367,7 +367,7 @@ func CompareCharacterInput(MainScreen [20][15]int,EmptyScreen [20][15]int,block 
     return block,Locate     
 }
 
-func LoopDown1Line(MainScreen [20][15]int,EmptyScreen [20][15]int,block [][]int,Locate []int ,CommunicateChannel chan string,score []int )([][]int,[]int){
+func LoopDown1Line(MainScreen [20][10]int,EmptyScreen [20][10]int,block [][]int,Locate []int ,CommunicateChannel chan string,score []int )([][]int,[]int){
     for{
         block,Locate = CompareCharacterInput(MainScreen,EmptyScreen,block,Locate,score,CommunicateChannel)  
         LocateDown := Down1Line(EmptyScreen,block,Locate)
@@ -388,7 +388,7 @@ func LoopDown1Line(MainScreen [20][15]int,EmptyScreen [20][15]int,block [][]int,
 
 
 // thiếu clear CommunicationChannel
-func ScreenLoop(MainScreen [20][15]int,EmptyScreen [20][15]int,block [][]int,Locate []int,CommunicateChannel chan string,score []int){
+func ScreenLoop(MainScreen [20][10]int,EmptyScreen [20][10]int,block [][]int,Locate []int,CommunicateChannel chan string,score []int){
     for{
         block, Locate = GetNewBlock(blocks) 
         DisScreen := MergeScreenAndBlock(MainScreen,block,Locate)
@@ -429,8 +429,8 @@ func ReadKeyboard(CommunicateChannel chan string) {  // put the keyboard into ch
 }
 
 func main(){
-	var EmptyScreen [20][15]int   // this doesn't have the pointer
-    var MainScreen [20][15]int
+	var EmptyScreen [20][10]int   // this doesn't have the pointer
+    var MainScreen [20][10]int
     var score = []int{0}
     CommunicateChannel := make(chan string)
     BlockX, Locate := GetNewBlock(blocks)
