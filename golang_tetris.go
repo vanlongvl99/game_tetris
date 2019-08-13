@@ -346,6 +346,25 @@ func (BlockInfo *InforOfBlock) CompareToMoveRight(screen TypeScreen,character st
     }
 }
 
+func(BlockInfo *InforOfBlock ) RotateLeftRight(screen TypeScreen){
+    if BlockInfo.FakeLocate[1] < len(screen.Main[0]) - len(BlockInfo.Block){
+        BlockInfo.FakeLocate[1]+=1
+    }
+    ScreenLocate := MergeScreenAndBlock(screen.Empty,BlockInfo.FakeBlock,BlockInfo.FakeLocate)
+    if CheckOverlapping(screen,ScreenLocate){
+        if BlockInfo.FakeLocate[1] > 1{
+            BlockInfo.FakeLocate[1] = BlockInfo.FakeLocate[1] -2
+        }
+    }
+    ScreenLocate = MergeScreenAndBlock(screen.Empty,BlockInfo.FakeBlock,BlockInfo.FakeLocate)
+    if CheckOverlapping(screen,ScreenLocate) == false{
+        BlockInfo.Block = BlockInfo.FakeBlock
+        BlockInfo.Location = BlockInfo.FakeLocate
+    }
+}
+
+
+
 func (BlockInfo *InforOfBlock ) CompareToRotate(screen TypeScreen,character string ,score []int){
     if character == "w"{
 		BlockInfo.RotateBlock90(screen)
@@ -366,6 +385,10 @@ func (BlockInfo *InforOfBlock ) CompareToRotate(screen TypeScreen,character stri
                 time.Sleep(10*time.Millisecond)
                 DisplayScreen(DisScreen,*BlockInfo,score)
                 time.Sleep(time.Millisecond)
+            }else{
+                BlockInfo.RotateLeftRight(screen)
+                DisScreen := MergeScreenAndBlock(screen.Main,BlockInfo.Block,BlockInfo.Location)
+                DisplayScreen(DisScreen,*BlockInfo,score)
             }
         }
     }
