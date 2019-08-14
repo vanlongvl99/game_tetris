@@ -69,7 +69,12 @@ type TypeScreen struct{
 	Empty [20][10]int
 }
 
-func CopyNewBlock(Block [][]int)[][]int{   // to copy new block
+type FlagInfo struct{
+    Down int
+    Check int
+}
+
+func CopyNewArray(Block [][]int)[][]int{   // to copy new block
     NewBlock := make([][]int,len(Block))
     for row := range Block{
         NewBlock[row] = make([]int,len(Block[row]))
@@ -181,20 +186,20 @@ func (BlockInfo *InforOfBlock) RotateBlock90(screen TypeScreen){
     if BlockInfo.FakeLocate[1]>len(screen.Empty[0])-len(BlockInfo.Block){  // check index out of range when it rotate
         BlockInfo.FakeLocate[1] = len(screen.Empty[0])-len(BlockInfo.Block)
     }
-    Block1 := CopyNewBlock(BlockInfo.Block)
+    Block1 := CopyNewArray(BlockInfo.Block)
     for row := range BlockInfo.Block{
         for colum := range Block1[row]{
             num := BlockInfo.Block[row][colum]
             Block1[colum][row] = num
         }
     }
-    Block2 := CopyNewBlock(Block1)
+    Block2 := CopyNewArray(Block1)
     for row := range Block1{
         for colum := range Block1[row]{
             Block2[row][colum] = Block1[row][len(Block1[row]) -1 -colum]
         }
 	}
-	BlockInfo.FakeBlock = CopyNewBlock(Block2)
+	BlockInfo.FakeBlock = CopyNewArray(Block2)
 }
 
 
@@ -363,15 +368,13 @@ func(BlockInfo *InforOfBlock ) RotateLeftRight(screen TypeScreen){
     }
 }
 
-
-
-func (BlockInfo *InforOfBlock ) CompareToRotate(screen TypeScreen,character string ,score []int){
+func (BlockInfo *InforOfBlock ) CompareToRotate(screen TypeScreen,character string ,score []int,flag FlagInfo)int{
     if character == "w"{
 		BlockInfo.RotateBlock90(screen)
 		LastRow := 0
-        for row := range BlockInfo.Block{
-            for colum := range BlockInfo.Block[row]{
-                if BlockInfo.Block[row][colum] != 0{
+        for row := range BlockInfo.FakeBlock{
+            for colum := range BlockInfo.FakeBlock[row]{
+                if BlockInfo.FakeBlock[row][colum] != 0{
                     LastRow = row
                 }
             }
@@ -390,12 +393,21 @@ func (BlockInfo *InforOfBlock ) CompareToRotate(screen TypeScreen,character stri
                 DisScreen := MergeScreenAndBlock(screen.Main,BlockInfo.Block,BlockInfo.Location)
                 DisplayScreen(DisScreen,*BlockInfo,score)
             }
+        }else if flag.Down == 1 {
+            BlockInfo.FakeLocate[0] = len(screen.Main) - LastRow -1
+            BlockInfo.Block = BlockInfo.FakeBlock
+            BlockInfo.Location = BlockInfo.FakeLocate
+            DisScreen := MergeScreenAndBlock(screen.Main,BlockInfo.Block,BlockInfo.Location)
+            DisplayScreen(DisScreen,*BlockInfo,score)
+            flag.Check = 1
         }
     }
+    return flag.Check
 }
 
 
-func (BlockInfo *InforOfBlock) CompareCharacterInput(screen TypeScreen,score []int,CommunicateChannel chan string){
+func (BlockInfo *InforOfBlock) CompareCharacterInput(screen TypeScreen,score []int,CommunicateChannel chan string,flag FlagInfo)int{
+    fmt.Println(flag.Down)
     level := 0.1
     TimeCount := 0.0
     for int(TimeCount + float64(score[0]/3)*level) != 1 { 
@@ -404,7 +416,7 @@ func (BlockInfo *InforOfBlock) CompareCharacterInput(screen TypeScreen,score []i
             if ok{
 				BlockInfo.CompareToMoveRight(screen,character,score)
 				BlockInfo.CompareToMoveLeft(screen,character,score)
-				BlockInfo.CompareToRotate(screen,character,score)
+				flag.Check = BlockInfo.CompareToRotate(screen,character,score,flag)
 				BlockInfo.CompareToDropAll(screen,character,score)
 				BlockInfo.CompareToDropFaster(screen,character,score)
             }else{         
@@ -414,13 +426,17 @@ func (BlockInfo *InforOfBlock) CompareCharacterInput(screen TypeScreen,score []i
         TimeCount += 0.001
         time.Sleep(1*time.Millisecond)
     }
+    return flag.Check
 }
 
 
-func (BlockInfo *InforOfBlock) LoopDown1Line(screen TypeScreen,CommunicateChannel chan string,score []int){
+func (BlockInfo *InforOfBlock) LoopDown1Line(screen TypeScreen,CommunicateChannel chan string,score []int,flag FlagInfo){
     for{
-		BlockInfo.CompareCharacterInput(screen,score,CommunicateChannel)
-		BlockInfo.Down1Line(screen)
+		flag.Check = BlockInfo.CompareCharacterInput(screen,score,CommunicateChannel,flag)
+        if flag.Check == 1{
+            flag.Down = 0
+        }
+        BlockInfo.Down1Line(screen)
         if reflect.DeepEqual(BlockInfo.Location,BlockInfo.FakeLocate) {
             break
 		}
@@ -437,11 +453,12 @@ func (BlockInfo *InforOfBlock) LoopDown1Line(screen TypeScreen,CommunicateChanne
 
 func ScreenLoop(screen TypeScreen,BlockInfo InforOfBlock,CommunicateChannel chan string,score []int,color []string){
     for{
+        flag := FlagInfo{1,0}
 		block, Locate := GetNewBlock(blocks) 
 		BlockInfo = InforOfBlock{block,block,Locate,Locate,color}
         DisScreen := MergeScreenAndBlock(screen.Main,BlockInfo.Block,BlockInfo.Location)
 		DisplayScreen(DisScreen,BlockInfo,score)
-		BlockInfo.LoopDown1Line(screen,CommunicateChannel,score)
+		BlockInfo.LoopDown1Line(screen,CommunicateChannel,score,flag)
         screen.Main = MergeScreenAndBlock(screen.Main,BlockInfo.Block,BlockInfo.Location)
         screen = CheckFullRow(screen,score)
         DisplayScreen(screen.Main,BlockInfo,score)
