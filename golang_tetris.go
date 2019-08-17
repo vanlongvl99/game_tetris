@@ -55,6 +55,13 @@ var color = []string{
     "\033[0;37;47m[]\033[m"}    //Text: White, Background: White
 //
 
+var ChangeLocate = [][]int{
+    []int{0,1},[]int{0,-1},[]int{-1,0},
+    []int{-1,1},[]int{-1,-1},
+    []int{0,2},[]int{0,-2},[]int{-2,0},
+    []int{-2,1},[]int{-2,-1},[]int{-1,2},[]int{-1,-2},
+}
+
 
 type InforOfBlock struct{
 	Block [][]int
@@ -65,8 +72,10 @@ type InforOfBlock struct{
 }
 
 type TypeScreen struct{
-	Main [20][10]int
-	Empty [20][10]int
+	Main [][]int
+    Empty [][]int
+    Row int
+    Colum int
 }
 
 type FlagInfo struct{
@@ -74,7 +83,7 @@ type FlagInfo struct{
     Check int
 }
 
-func CopyNewArray(Block [][]int)[][]int{   // to copy new block
+func CopyNewBlock(Block [][]int)[][]int{   // to copy new block
     NewBlock := make([][]int,len(Block))
     for row := range Block{
         NewBlock[row] = make([]int,len(Block[row]))
@@ -85,6 +94,14 @@ func CopyNewArray(Block [][]int)[][]int{   // to copy new block
         }
     }
     return NewBlock
+}
+
+func MakeNewScreen(screen TypeScreen)[][]int{   // to copy new block
+    NewScreen := make([][]int,screen.Row)
+    for row := range NewScreen{
+        NewScreen[row] = make([]int,screen.Colum )
+    }
+    return NewScreen
 }
 
 func CopyNewLoca(Locate []int)[]int{    // to copy new location
@@ -99,9 +116,8 @@ func CopyNewLoca(Locate []int)[]int{    // to copy new location
 //checked and this right
 func GetNewBlock(blocks [][][]int)([][]int,[]int){
 	LocationOfBlock := []int{0,3}
-	rand.Seed(time.Now().UnixNano())
 	NumberBlock := rand.Intn(7)
-	block := blocks[NumberBlock]
+    block := blocks[NumberBlock]
 	num := rand.Intn(7)+1
 	for row := 0; row<len(block);row++{
 		for colum :=0; colum<len(block[row]); colum++{
@@ -109,15 +125,15 @@ func GetNewBlock(blocks [][][]int)([][]int,[]int){
 				block[row][colum] = num
 			}
 		}
-	}
+    }
 	return block, LocationOfBlock
 }
 
 
 
-// checked and this right
-func MergeScreenAndBlock(ScreenEmpty [20][10]int,block [][]int, locate []int)([20][10]int){
-	BlockInScreen := ScreenEmpty
+// checked and this right20
+func MergeScreenAndBlock(ScreenEmpty [][]int,block [][]int, locate []int)([][]int){
+	BlockInScreen := CopyNewBlock(ScreenEmpty)
 	for row := 0; row<len(block); row++{
 		for colum :=0; colum<len(block[row]); colum++{
 			if block[row][colum] != 0{
@@ -131,79 +147,78 @@ func MergeScreenAndBlock(ScreenEmpty [20][10]int,block [][]int, locate []int)([2
 
 // is checked when it move to last row of screen
 // don't have new_location, we have to change the location if we can't down becase of overlapping
-func (BlockInfo *InforOfBlock) Down1Line(screen TypeScreen){
-	BlockInfo.FakeLocate =CopyNewLoca(BlockInfo.Location)
+func (block *InforOfBlock) Down1Line(screen TypeScreen){
+	block.FakeLocate =CopyNewLoca(block.Location)
 	LastRow := 0
-	for row := range BlockInfo.Block{
-		for colum := range BlockInfo.Block {
-			if BlockInfo.Block[row][colum] != 0{
+	for row := range block.Block{
+		for colum := range block.Block {
+			if block.Block[row][colum] != 0{
 				LastRow = row
 			}
 		}
 	}
-	if BlockInfo.FakeLocate[0] <len(screen.Empty) - LastRow -1{
-		BlockInfo.FakeLocate[0] ++
+	if block.FakeLocate[0] <len(screen.Empty) - LastRow -1{
+		block.FakeLocate[0] ++
 	}
 }
 
 
 
-func (BlockInfo *InforOfBlock) MoveLeft(screenscreen TypeScreen){
-	BlockInfo.FakeLocate =CopyNewLoca(BlockInfo.Location)
+func (block *InforOfBlock) MoveLeft(screenscreen TypeScreen){
+	block.FakeLocate =CopyNewLoca(block.Location)
 	FistColum :=0
-	for colum := len(BlockInfo.Block[0]) -1; colum >-1; colum-- {
-		for row := range BlockInfo.Block{
-			if BlockInfo.Block[row][colum] != 0{
+	for colum := len(block.Block[0]) -1; colum >-1; colum-- {
+		for row := range block.Block{
+			if block.Block[row][colum] != 0{
 				FistColum = colum
 			}
 		}
 	}
-	if BlockInfo.FakeLocate[1] + FistColum >0{
-		BlockInfo.FakeLocate[1] -= 1
+	if block.FakeLocate[1] + FistColum >0{
+		block.FakeLocate[1] -= 1
 	}
 }
 
-func (BlockInfo *InforOfBlock) MoveRight(screen TypeScreen){
-	BlockInfo.FakeLocate =CopyNewLoca(BlockInfo.Location)
+func (block *InforOfBlock) MoveRight(screen TypeScreen){
+	block.FakeLocate =CopyNewLoca(block.Location)
 	LastColum :=0
-	for colum := range BlockInfo.Block[0] {
-		for row := range BlockInfo.Block{
-			if BlockInfo.Block[row][colum] != 0{
+	for colum := range block.Block[0] {
+		for row := range block.Block{
+			if block.Block[row][colum] != 0{
 				LastColum = colum
 			}
 		}
 	}
-	if BlockInfo.FakeLocate[1] + LastColum < len(screen.Empty[0]) -1 {
-		BlockInfo.FakeLocate[1] += 1
+	if block.FakeLocate[1] + LastColum < len(screen.Empty[0]) -1 {
+		block.FakeLocate[1] += 1
 	}
 }
 
-func (BlockInfo *InforOfBlock) RotateBlock90(screen TypeScreen){
-	BlockInfo.FakeLocate =CopyNewLoca(BlockInfo.Location)  //update 
-	if BlockInfo.FakeLocate[1]<0{             // check index out of range when it rotate
-        BlockInfo.FakeLocate[1]=0
+func (block *InforOfBlock) RotateBlock90(screen TypeScreen){
+	block.FakeLocate =CopyNewLoca(block.Location)  //update 
+	if block.FakeLocate[1]<0{             // check index out of range when it rotate
+        block.FakeLocate[1]=0
     }
-    if BlockInfo.FakeLocate[1]>len(screen.Empty[0])-len(BlockInfo.Block){  // check index out of range when it rotate
-        BlockInfo.FakeLocate[1] = len(screen.Empty[0])-len(BlockInfo.Block)
+    if block.FakeLocate[1]>len(screen.Empty[0])-len(block.Block){  // check index out of range when it rotate
+        block.FakeLocate[1] = len(screen.Empty[0])-len(block.Block)
     }
-    Block1 := CopyNewArray(BlockInfo.Block)
-    for row := range BlockInfo.Block{
+    Block1 := CopyNewBlock(block.Block)
+    for row := range block.Block{
         for colum := range Block1[row]{
-            num := BlockInfo.Block[row][colum]
+            num := block.Block[row][colum]
             Block1[colum][row] = num
         }
     }
-    Block2 := CopyNewArray(Block1)
+    Block2 := CopyNewBlock(Block1)
     for row := range Block1{
         for colum := range Block1[row]{
             Block2[row][colum] = Block1[row][len(Block1[row]) -1 -colum]
         }
 	}
-	BlockInfo.FakeBlock = CopyNewArray(Block2)
+	block.FakeBlock = CopyNewBlock(Block2)
 }
 
-
-func CheckOverlapping(screen TypeScreen, NewScr [20][10]int)bool{
+func CheckOverlapping(screen TypeScreen, NewScr [][]int)bool{
     LinhCanh :=0
     for row := range screen.Main{
         for colum := range screen.Main[row]{
@@ -249,25 +264,30 @@ func CheckFullRow(screen TypeScreen,score []int)TypeScreen{
     return screen
 }
 
-func DisplayScreen(screen_ [20][10]int,BlockInfo InforOfBlock,score []int ){
+func DisplayScreen(screen_ [][]int,block InforOfBlock,score []int ){
     ClearTerminal()
     fmt.Println("\nYour score:",score[0])
-    fmt.Println("========================")
+    line := ""
+    for i :=0; i< 2*len(screen_[0]) + 4;i++{
+        line += "="
+    }
+    fmt.Println(line)
     for row := range screen_{
 		fmt.Printf("||")
 		for colum := range screen_[row]{
 			if screen_[row][colum] != 0 {
 				num := screen_[row][colum]
-				fmt.Printf(BlockInfo.Color[num])
+				fmt.Printf(block.Color[num])
 			}else{
 				fmt.Printf("  ")
         	}
 		}
 		fmt.Printf("||\n")	
 	}
-    fmt.Println("========================")
+    fmt.Println(line)
     fmt.Println("Ps: w: rotate, a: move left, s: down faster d: move right")
     fmt.Println("Ps:Ctrl + z to exit the program")
+   
 } 
 
 
@@ -277,7 +297,7 @@ func ClearTerminal(){
 	clear.Run()
 }
 
-func CheckGameOver(MainScreen [20][10]int,block [][]int)bool{
+func CheckGameOver(MainScreen [][]int,block [][]int)bool{
     for colum :=3; colum<3+len(block); colum++{
         if MainScreen[0][colum] != 0{
             return true
@@ -286,119 +306,127 @@ func CheckGameOver(MainScreen [20][10]int,block [][]int)bool{
     return false
 }
 
-func (BlockInfo *InforOfBlock) CompareToMoveLeft(screen TypeScreen,character string ,score []int){
+func (block *InforOfBlock) CompareToMoveLeft(screen TypeScreen,character string ,score []int){
     if character == "a"{
-		BlockInfo.MoveLeft(screen)
-		if reflect.DeepEqual(BlockInfo.Location,BlockInfo.FakeLocate) == false{
-            ScreenLeft := MergeScreenAndBlock(screen.Empty,BlockInfo.Block,BlockInfo.FakeLocate)
+		block.MoveLeft(screen)
+		if reflect.DeepEqual(block.Location,block.FakeLocate) == false{
+            ScreenLeft := MergeScreenAndBlock(screen.Empty,block.Block,block.FakeLocate)
             if CheckOverlapping(screen,ScreenLeft) == false{
-                DisScreen := MergeScreenAndBlock(screen.Main,BlockInfo.Block,BlockInfo.FakeLocate)
-                DisplayScreen(DisScreen, *BlockInfo,score)
+                DisScreen := MergeScreenAndBlock(screen.Main,block.Block,block.FakeLocate)
+                DisplayScreen(DisScreen, *block,score)
                 time.Sleep(time.Millisecond)
-				BlockInfo.Location = BlockInfo.FakeLocate
+				block.Location = block.FakeLocate
             }
         }
     }
 }
 
 
-func (BlockInfo *InforOfBlock) CompareToDropAll(screen TypeScreen,character string ,score []int){
+func (block *InforOfBlock) CompareToDropAll(screen TypeScreen,character string ,score []int){
     if character == " "{
         for{
-            BlockInfo.Down1Line(screen)
-            if reflect.DeepEqual(BlockInfo.Location,BlockInfo.FakeLocate){
+            block.Down1Line(screen)
+            if reflect.DeepEqual(block.Location,block.FakeLocate){
                 break
             }
-            ScreenDown := MergeScreenAndBlock(screen.Empty,BlockInfo.Block,BlockInfo.FakeLocate)
+            ScreenDown := MergeScreenAndBlock(screen.Empty,block.Block,block.FakeLocate)
             if CheckOverlapping(screen,ScreenDown){
                 break
             }
-            BlockInfo.Location = BlockInfo.FakeLocate
+            block.Location = block.FakeLocate
         }
-        DisScreen := MergeScreenAndBlock(screen.Main,BlockInfo.Block,BlockInfo.Location)
-        DisplayScreen(DisScreen,*BlockInfo,score)
+        DisScreen := MergeScreenAndBlock(screen.Main,block.Block,block.Location)
+        DisplayScreen(DisScreen,*block,score)
         time.Sleep(time.Millisecond)
     }
 }
 
-func (BlockInfo *InforOfBlock) CompareToDropFaster(screen TypeScreen,character string ,score []int){
+func (block *InforOfBlock) CompareToDropFaster(screen TypeScreen,character string ,score []int){
     if character == "s"{
-		BlockInfo.Down1Line(screen)
-        if reflect.DeepEqual(BlockInfo.Location,BlockInfo.FakeLocate) == false{
-            ScreenDown := MergeScreenAndBlock(screen.Empty,BlockInfo.Block,BlockInfo.FakeLocate)
+		block.Down1Line(screen)
+        if reflect.DeepEqual(block.Location,block.FakeLocate) == false{
+            ScreenDown := MergeScreenAndBlock(screen.Empty,block.Block,block.FakeLocate)
             if CheckOverlapping(screen,ScreenDown) == false{
-                BlockInfo.Location = BlockInfo.FakeLocate
-                DisScreen := MergeScreenAndBlock(screen.Main,BlockInfo.Block,BlockInfo.Location)
-                DisplayScreen(DisScreen,*BlockInfo,score)
+                block.Location = block.FakeLocate
+                DisScreen := MergeScreenAndBlock(screen.Main,block.Block,block.Location)
+                DisplayScreen(DisScreen,*block,score)
                 time.Sleep(time.Millisecond)
             }
         }
     }
 }
 
-func (BlockInfo *InforOfBlock) CompareToMoveRight(screen TypeScreen,character string ,score []int ){
+func (block *InforOfBlock) CompareToMoveRight(screen TypeScreen,character string ,score []int ){
     if character == "d"{
-		BlockInfo.MoveRight(screen)
-		if reflect.DeepEqual(BlockInfo.Location,BlockInfo.FakeLocate) == false{
-            ScreenRight := MergeScreenAndBlock(screen.Empty,BlockInfo.Block,BlockInfo.FakeLocate)
+		block.MoveRight(screen)
+		if reflect.DeepEqual(block.Location,block.FakeLocate) == false{
+            ScreenRight := MergeScreenAndBlock(screen.Empty,block.Block,block.FakeLocate)
             if CheckOverlapping(screen,ScreenRight) == false{
-                DisScreen := MergeScreenAndBlock(screen.Main,BlockInfo.Block,BlockInfo.FakeLocate)
-                DisplayScreen(DisScreen,*BlockInfo,score)
+                DisScreen := MergeScreenAndBlock(screen.Main,block.Block,block.FakeLocate)
+                DisplayScreen(DisScreen,*block,score)
                 time.Sleep(time.Millisecond)
-				BlockInfo.Location = BlockInfo.FakeLocate
+				block.Location = block.FakeLocate
 			}
         }
     }
 }
 
-func(BlockInfo *InforOfBlock ) RotateLeftRight(screen TypeScreen){
-    if BlockInfo.FakeLocate[1] < len(screen.Main[0]) - len(BlockInfo.Block){
-        BlockInfo.FakeLocate[1]+=1
+func(block *InforOfBlock ) RotateLeftRight(screen TypeScreen, flag FlagInfo)int{
+    if block.FakeLocate[1] < len(screen.Main[0]) - len(block.Block){
+        block.FakeLocate[1]+=1
     }
-    ScreenLocate := MergeScreenAndBlock(screen.Empty,BlockInfo.FakeBlock,BlockInfo.FakeLocate)
+    ScreenLocate := MergeScreenAndBlock(screen.Empty,block.FakeBlock,block.FakeLocate)
     if CheckOverlapping(screen,ScreenLocate){
-        if BlockInfo.FakeLocate[1] > 1{
-            BlockInfo.FakeLocate[1] = BlockInfo.FakeLocate[1] -2
+        if block.FakeLocate[1] > 1{
+            block.FakeLocate[1] = block.FakeLocate[1] -2
         }
+        ScreenLocate = MergeScreenAndBlock(screen.Empty,block.FakeBlock,block.FakeLocate)
+        if CheckOverlapping(screen,ScreenLocate){
+            block.FakeLocate[1] += 1 
+            block.FakeLocate[0] = block.FakeLocate[0] -1
+            flag.Check = 1
+        }
+
     }
-    ScreenLocate = MergeScreenAndBlock(screen.Empty,BlockInfo.FakeBlock,BlockInfo.FakeLocate)
+    ScreenLocate = MergeScreenAndBlock(screen.Empty,block.FakeBlock,block.FakeLocate)
     if CheckOverlapping(screen,ScreenLocate) == false{
-        BlockInfo.Block = BlockInfo.FakeBlock
-        BlockInfo.Location = BlockInfo.FakeLocate
+        block.Block = block.FakeBlock
+        block.Location = block.FakeLocate
     }
+    return flag.Check
 }
 
-func (BlockInfo *InforOfBlock ) CompareToRotate(screen TypeScreen,character string ,score []int,flag FlagInfo)int{
+func (block *InforOfBlock ) CompareToRotate(screen TypeScreen,character string ,score []int,flag FlagInfo)int{
     if character == "w"{
-		BlockInfo.RotateBlock90(screen)
+		block.RotateBlock90(screen)
 		LastRow := 0
-        for row := range BlockInfo.FakeBlock{
-            for colum := range BlockInfo.FakeBlock[row]{
-                if BlockInfo.FakeBlock[row][colum] != 0{
+        for row := range block.FakeBlock{
+            for colum := range block.FakeBlock[row]{
+                if block.FakeBlock[row][colum] != 0{
                     LastRow = row
                 }
             }
         }
-        if BlockInfo.FakeLocate[0] < len(screen.Main) - LastRow -1 {
-            ScreenLocate := MergeScreenAndBlock(screen.Empty,BlockInfo.FakeBlock,BlockInfo.FakeLocate)
+        if block.FakeLocate[0] < len(screen.Main) - LastRow -1 {
+            ScreenLocate := MergeScreenAndBlock(screen.Empty,block.FakeBlock,block.FakeLocate)
             if CheckOverlapping(screen,ScreenLocate) == false{
-                BlockInfo.Block = BlockInfo.FakeBlock
-                BlockInfo.Location = BlockInfo.FakeLocate
-                DisScreen := MergeScreenAndBlock(screen.Main,BlockInfo.Block,BlockInfo.Location)
-                time.Sleep(10*time.Millisecond)
-                DisplayScreen(DisScreen,*BlockInfo,score)
+                block.Block = block.FakeBlock
+                block.Location = block.FakeLocate
+                DisScreen := MergeScreenAndBlock(screen.Main,block.Block,block.Location)
+                time.Sleep(time.Millisecond)
+                DisplayScreen(DisScreen,*block,score)
                 time.Sleep(time.Millisecond)
             }else{
-                BlockInfo.RotateLeftRight(screen)
-                DisScreen := MergeScreenAndBlock(screen.Main,BlockInfo.Block,BlockInfo.Location)
-                DisplayScreen(DisScreen,*BlockInfo,score)
+                flag.Check = block.RotateLeftRight(screen,flag)
+                DisScreen := MergeScreenAndBlock(screen.Main,block.Block,block.Location)
+                DisplayScreen(DisScreen,*block,score)
             }
         }else if flag.Down == 1 {
-            BlockInfo.FakeLocate[0] = len(screen.Main) - LastRow -1
-            BlockInfo.Block = BlockInfo.FakeBlock
-            BlockInfo.Location = BlockInfo.FakeLocate
-            DisScreen := MergeScreenAndBlock(screen.Main,BlockInfo.Block,BlockInfo.Location)
-            DisplayScreen(DisScreen,*BlockInfo,score)
+            block.FakeLocate[0] = len(screen.Main) - LastRow -1
+            block.Block = block.FakeBlock
+            block.Location = block.FakeLocate
+            DisScreen := MergeScreenAndBlock(screen.Main,block.Block,block.Location)
+            DisplayScreen(DisScreen,*block,score)
             flag.Check = 1
         }
     }
@@ -406,7 +434,7 @@ func (BlockInfo *InforOfBlock ) CompareToRotate(screen TypeScreen,character stri
 }
 
 
-func (BlockInfo *InforOfBlock) CompareCharacterInput(screen TypeScreen,score []int,CommunicateChannel chan string,flag FlagInfo)int{
+func (block *InforOfBlock) CompareCharacterInput(screen TypeScreen,score []int,CommunicateChannel chan string,flag FlagInfo)int{
     fmt.Println(flag.Down)
     level := 0.1
     TimeCount := 0.0
@@ -414,11 +442,14 @@ func (BlockInfo *InforOfBlock) CompareCharacterInput(screen TypeScreen,score []i
         select{
         case character,ok := <-CommunicateChannel:
             if ok{
-				BlockInfo.CompareToMoveRight(screen,character,score)
-				BlockInfo.CompareToMoveLeft(screen,character,score)
-				flag.Check = BlockInfo.CompareToRotate(screen,character,score,flag)
-				BlockInfo.CompareToDropAll(screen,character,score)
-				BlockInfo.CompareToDropFaster(screen,character,score)
+				block.CompareToMoveRight(screen,character,score)
+				block.CompareToMoveLeft(screen,character,score)
+				flag.Check = block.CompareToRotate(screen,character,score,flag)
+				block.CompareToDropAll(screen,character,score)
+                block.CompareToDropFaster(screen,character,score)
+                if character == " "{
+                    break
+                }
             }else{         
             }
         default:
@@ -430,39 +461,44 @@ func (BlockInfo *InforOfBlock) CompareCharacterInput(screen TypeScreen,score []i
 }
 
 
-func (BlockInfo *InforOfBlock) LoopDown1Line(screen TypeScreen,CommunicateChannel chan string,score []int,flag FlagInfo){
+func (block *InforOfBlock) LoopDown1Line(screen TypeScreen,CommunicateChannel chan string,score []int,flag FlagInfo){
     for{
-		flag.Check = BlockInfo.CompareCharacterInput(screen,score,CommunicateChannel,flag)
+		flag.Check = block.CompareCharacterInput(screen,score,CommunicateChannel,flag)
         if flag.Check == 1{
             flag.Down = 0
         }
-        BlockInfo.Down1Line(screen)
-        if reflect.DeepEqual(BlockInfo.Location,BlockInfo.FakeLocate) {
+        block.Down1Line(screen)
+        if reflect.DeepEqual(block.Location,block.FakeLocate) {
             break
-		}
-        ScreenDown := MergeScreenAndBlock(screen.Empty,BlockInfo.Block,BlockInfo.FakeLocate)
+        }
+        ScreenDown := MergeScreenAndBlock(screen.Empty,block.Block,block.FakeLocate)
         if  CheckOverlapping(screen,ScreenDown) {
             break
-		}
-        BlockInfo.Location = BlockInfo.FakeLocate
-        DisScreen := MergeScreenAndBlock(screen.Main,BlockInfo.Block,BlockInfo.Location)
-		DisplayScreen(DisScreen,*BlockInfo,score)
+        }
+        
+        block.Location = block.FakeLocate
+        DisScreen := MergeScreenAndBlock(screen.Main,block.Block,block.Location)
+		DisplayScreen(DisScreen,*block,score)
     } 
 }
 
 
-func ScreenLoop(screen TypeScreen,BlockInfo InforOfBlock,CommunicateChannel chan string,score []int,color []string){
+func ScreenLoop(screen TypeScreen,block InforOfBlock,CommunicateChannel chan string,score []int,color []string){
     for{
         flag := FlagInfo{1,0}
-		block, Locate := GetNewBlock(blocks) 
-		BlockInfo = InforOfBlock{block,block,Locate,Locate,color}
-        DisScreen := MergeScreenAndBlock(screen.Main,BlockInfo.Block,BlockInfo.Location)
-		DisplayScreen(DisScreen,BlockInfo,score)
-		BlockInfo.LoopDown1Line(screen,CommunicateChannel,score,flag)
-        screen.Main = MergeScreenAndBlock(screen.Main,BlockInfo.Block,BlockInfo.Location)
+        BlockNew, Locate := GetNewBlock(blocks)
+        block = InforOfBlock{BlockNew,BlockNew,Locate,Locate,color}
+        ScreenNew := MergeScreenAndBlock(screen.Empty,block.Block,block.Location)
+        if CheckOverlapping(screen,ScreenNew){
+            break
+        }
+        DisScreen := MergeScreenAndBlock(screen.Main,block.Block,block.Location)
+		DisplayScreen(DisScreen,block,score)
+		block.LoopDown1Line(screen,CommunicateChannel,score,flag)
+        screen.Main = MergeScreenAndBlock(screen.Main,block.Block,block.Location)
         screen = CheckFullRow(screen,score)
-        DisplayScreen(screen.Main,BlockInfo,score)
-        if CheckGameOver(screen.Main,BlockInfo.Block){
+        DisplayScreen(screen.Main,block,score)
+        if CheckGameOver(screen.Main,block.Block){
             break
         }
     }   
@@ -476,7 +512,7 @@ func ReadChar()string{
     // do not display entered characters on the screen
     // exec.Command("stty", "-F", "/dev/tty", "-echo").Run()
 
-	var character []byte = make([]byte, 1)
+	var character []byte = make([]byte,1)
 	os.Stdin.Read(character)
     return string(character)
 }
@@ -489,12 +525,17 @@ func ReadKeyboard(CommunicateChannel chan string) {  // put the keyboard into ch
 }
 
 func main(){
-	var screen TypeScreen
+    rand.Seed(time.Now().UnixNano())
+    var screen TypeScreen
+    screen.Row = 20
+    screen.Colum = 10
+    screen.Main = MakeNewScreen(screen)
+    screen.Empty = MakeNewScreen(screen)
 	var score = []int{0}
-	var BlockInfo InforOfBlock
+	var block InforOfBlock
     CommunicateChannel := make(chan string)
     go ReadKeyboard(CommunicateChannel)
-    ScreenLoop(screen,BlockInfo,CommunicateChannel,score,color)
+    ScreenLoop(screen,block,CommunicateChannel,score,color)
     for{
         time.Sleep(time.Millisecond)
     }
