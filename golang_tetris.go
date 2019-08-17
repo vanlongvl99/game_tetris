@@ -55,7 +55,7 @@ var color = []string{
     "\033[0;37;47m[]\033[m"}    //Text: White, Background: White
 //
 
-var ChangeLocate = [][]int{
+var Change = [][]int{
     []int{0,1},[]int{0,-1},[]int{-1,0},
     []int{-1,1},[]int{-1,-1},
     []int{0,2},[]int{0,-2},[]int{-2,0},
@@ -371,30 +371,35 @@ func (block *InforOfBlock) CompareToMoveRight(screen TypeScreen,character string
     }
 }
 
+
 func(block *InforOfBlock ) RotateLeftRight(screen TypeScreen, flag FlagInfo)int{
-    if block.FakeLocate[1] < len(screen.Main[0]) - len(block.Block){
-        block.FakeLocate[1]+=1
+    index := 0
+    for i := range Change{
+        if block.Location[1] < len(screen.Main[0]) - len(block.Block) - Change[i][1]{
+            if block.Location[1] > - Change[i][1] - 1{
+                index = i
+                block.FakeLocate[0] = block.Location[0] + Change[i][0]
+                block.FakeLocate[1] = block.Location[1] + Change[i][1]
+                ScreenLocate := MergeScreenAndBlock(screen.Empty,block.FakeBlock,block.FakeLocate)
+                if CheckOverlapping(screen,ScreenLocate) == false{
+                    break
+                }
+            }
+        }
     }
     ScreenLocate := MergeScreenAndBlock(screen.Empty,block.FakeBlock,block.FakeLocate)
-    if CheckOverlapping(screen,ScreenLocate){
-        if block.FakeLocate[1] > 1{
-            block.FakeLocate[1] = block.FakeLocate[1] -2
-        }
-        ScreenLocate = MergeScreenAndBlock(screen.Empty,block.FakeBlock,block.FakeLocate)
-        if CheckOverlapping(screen,ScreenLocate){
-            block.FakeLocate[1] += 1 
-            block.FakeLocate[0] = block.FakeLocate[0] -1
-            flag.Check = 1
-        }
-
-    }
-    ScreenLocate = MergeScreenAndBlock(screen.Empty,block.FakeBlock,block.FakeLocate)
     if CheckOverlapping(screen,ScreenLocate) == false{
         block.Block = block.FakeBlock
         block.Location = block.FakeLocate
     }
+    if Change[index][0] != 0{
+        flag.Check = 1
+    }
     return flag.Check
 }
+
+
+
 
 func (block *InforOfBlock ) CompareToRotate(screen TypeScreen,character string ,score []int,flag FlagInfo)int{
     if character == "w"{
@@ -413,9 +418,7 @@ func (block *InforOfBlock ) CompareToRotate(screen TypeScreen,character string ,
                 block.Block = block.FakeBlock
                 block.Location = block.FakeLocate
                 DisScreen := MergeScreenAndBlock(screen.Main,block.Block,block.Location)
-                time.Sleep(time.Millisecond)
                 DisplayScreen(DisScreen,*block,score)
-                time.Sleep(time.Millisecond)
             }else{
                 flag.Check = block.RotateLeftRight(screen,flag)
                 DisScreen := MergeScreenAndBlock(screen.Main,block.Block,block.Location)
@@ -448,7 +451,7 @@ func (block *InforOfBlock) CompareCharacterInput(screen TypeScreen,score []int,C
 				block.CompareToDropAll(screen,character,score)
                 block.CompareToDropFaster(screen,character,score)
                 if character == " "{
-                    break
+                    return flag.Check
                 }
             }else{         
             }
